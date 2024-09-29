@@ -1,0 +1,26 @@
+@keyframes backgroundChange {
+    0% {
+      background-color: #2C3E50; /* ירוק כהה */
+    }
+    33% {
+      background-color: #D2B48C; /* חום בהיר */
+    }
+    66% {
+      background-color: #138b33; /* חום כהה */
+    }
+    100% {
+      background-color: #2C3E50; /* חוזר לירוק כהה */
+    }
+  }
+  
+  .Header-span {
+    display: inline-block;
+    border-radius: 20px;
+    font-size: 30px;
+    margin: 15px;
+    margin-left: 250px;
+    animation: backgroundChange 21s infinite;
+    padding: 10px;
+    color: black; 
+  }
+  

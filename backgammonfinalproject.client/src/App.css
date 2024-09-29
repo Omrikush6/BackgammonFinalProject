@@ -1,0 +1,10 @@
+body {
+    background-image: url('assets/back-gommon5.jpeg');
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
