@@ -66,6 +66,7 @@ namespace BackgammonFinalProject.Controllers
             var token = GenerateJwtToken(user);
 
             Response.Cookies.Append("JWT", token, new CookieOptions { HttpOnly = true });
+
             return Ok(new { Token = token });
         }
 
@@ -89,12 +90,6 @@ namespace BackgammonFinalProject.Controllers
                 signingCredentials: creds
             );
             var generatedToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            Console.WriteLine($"Generated JWT: {generatedToken}");
-            foreach (var claim in User.Claims)
-            {
-                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
-            }
 
             return generatedToken;
         }

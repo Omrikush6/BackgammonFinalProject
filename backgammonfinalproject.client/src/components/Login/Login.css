@@ -60,6 +60,14 @@ button.ghost {
 	border-color: #FFFFFF;
 }
 
+.toggle_password {
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	transform: translateY(-90%);
+	cursor: pointer;
+}
+
 form {
 	background-color: #d3cece;
 	display: flex;
@@ -216,3 +224,26 @@ input {
 	width: 40px;
 }
 
+.password-container {
+	position: relative;
+	width: 100%;
+	margin: 10px 0; 
+}
+
+
+	.password-container input {
+		width: 100%; 
+		padding-right: 40px; 
+	}
+
+.show-password-button {
+	position: absolute;
+	right: 10px;
+	top: 40%;
+	transform: translateY(-20%);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	font-size: 16px;
+}
