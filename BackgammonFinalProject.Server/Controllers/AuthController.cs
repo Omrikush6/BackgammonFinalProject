@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using BackgammonFinalProject.DTOs;
 using BackgammonFinalProject.Repositories.Interfaces;
 using BackgammonFinalProject.Services.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace BackgammonFinalProject.Controllers
 {
@@ -33,9 +34,10 @@ namespace BackgammonFinalProject.Controllers
         {
             var existingUser = await _userRepository.GetByUsernameAsync(userDto.Username);
             if (existingUser != null)
-            {
                 return BadRequest("Username already taken.");
-            }
+
+            if (string.IsNullOrWhiteSpace(userDto.Email) || !Regex.IsMatch(userDto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                return BadRequest("Invalid or missing email.");
 
             var passwordHash = _hashingService.HashPassword(userDto.Password);
 

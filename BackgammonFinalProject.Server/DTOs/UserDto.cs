@@ -4,15 +4,14 @@ namespace BackgammonFinalProject.DTOs
 {
     public class UserDto
     {
-        [Required] 
+        [Required]
         public int Id { get; set; }
 
         [Required]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters.")]
         public string Username { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Invalid email format.")]
         public string Email { get; set; } = string.Empty;
 
         [Required]
