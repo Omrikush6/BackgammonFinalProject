@@ -8,7 +8,7 @@ const LobbyItem = ({ label }) => (
 );
 
 const Lobby = () => {
-  const lobbyItems = ['Start-Game', 'Ranking-Table', 'About', 'Go-Back', 'Contact-us'];
+  const lobbyItems = ['Start New Game', 'Ranking-Table', 'Open Room', 'Go-Back', 'Contact-us'];
 
   return (
     <div className="lobby-container">

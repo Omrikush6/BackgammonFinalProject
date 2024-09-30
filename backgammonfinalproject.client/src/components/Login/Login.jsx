@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import './Login.css';
 
 function Login() {
-    const [username, setUserName] = useState(''); // State for name input
-    const [email, setEmail] = useState(''); // State for email input
-    const [password, setPassword] = useState(''); // State for password input
-    const [isSignIn, setIsSignIn] = useState(true); // State to toggle between sign-in and sign-up
+    const [username, setUserName] = useState(''); 
+    const [email, setEmail] = useState(''); 
+    const [password, setPassword] = useState(''); 
+    
 
     useEffect(() => {
         const signUpButton = document.getElementById('signUp');
@@ -14,12 +14,12 @@ function Login() {
 
         signUpButton.addEventListener('click', () => {
             container.classList.add("right-panel-active");
-            setIsSignIn(false); // Set to sign-up mode
+           
         });
 
         signInButton.addEventListener('click', () => {
             container.classList.remove("right-panel-active");
-            setIsSignIn(true); // Set to sign-in mode
+            
         });
 
         return () => {
@@ -28,21 +28,21 @@ function Login() {
         };
     }, []);
 
-    const handleSignUp = async (e) => { // Handle sign-up form submission
+    const handleSignUp = async (e) => { 
         e.preventDefault();
         try {
-            const response = await fetch('https://localhost:7027/api/Auth/signup', { // Change the URL to match your API endpoint
+            const response = await fetch('https://localhost:7027/api/Auth/signup', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, email, password }) // Send name, email, and password to the API
+                body: JSON.stringify({ username, email, password }) 
             });
 
             if (response.ok) {
                 const data = await response.json();
                 console.log('Sign Up Success:', data);
-                // Optionally, redirect to login or home page
+                
             } else {
                 console.error('Sign Up Failed:', response.statusText);
             }
@@ -51,24 +51,24 @@ function Login() {
         }
     };
 
-    const handleLognIn = async (e) => { // Handle sign-in form submission
+    const handleLognIn = async (e) => { 
         e.preventDefault();
-        const emailInput = e.target.email.value; // Get email input from the form
-        const passwordInput = e.target.password.value; // Get password input from the form
+        const usernameInput = e.target.username.value; 
+        const passwordInput = e.target.password.value; 
 
         try {
-            const response = await fetch('https://localhost:7027/api/Auth/login', { // Change the URL to match your API endpoint
+            const response = await fetch('https://localhost:7027/api/Auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: emailInput, password: passwordInput }) // Send email and password to the API
+                body: JSON.stringify({ username: usernameInput, password: passwordInput })
             });
 
             if (response.ok) {
                 const data = await response.json();
                 console.log('Sign In Success:', data);
-                // Optionally, save token and redirect to home page
+                
             } else {
                 console.error('Sign In Failed:', response.statusText);
             }
@@ -94,7 +94,7 @@ function Login() {
                     <form onSubmit={handleLognIn}> {/* Call handleSignIn on form submission */}
                         <h1>Sign in</h1>
                         <span>or use your account</span>
-                        <input type="email" name="email" placeholder="Email" required /> {/* Added name attribute for email */}
+                        <input type="text" name="username" placeholder="username" required /> {/* Added name attribute for email */}
                         <input type="password" name="password" placeholder="Password" required /> {/* Added name attribute for password */}
                         <a href="#">Forgot your password?</a>
                         <button type="submit">Sign In</button>
