@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackgammonFinalProject.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class GameController : ControllerBase
     {
         private readonly GameService _gameService;

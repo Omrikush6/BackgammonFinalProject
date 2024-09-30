@@ -1,6 +1,6 @@
 @BackgammonFinalProject.Server_HostAddress = http://localhost:5091
 
-GET {{BackgammonFinalProject.Server_HostAddress}}/weatherforecast/
+GET {{BackgammonFinalProject.Server_HostAddress}}/
 Accept: application/json
 
 ###
