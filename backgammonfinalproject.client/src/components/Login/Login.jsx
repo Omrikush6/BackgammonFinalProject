@@ -44,6 +44,8 @@ function Login() {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Sign Up Success:', data);
+                localStorage.setItem('token', data.token);
+                window.location.href = '/Lobby';
             } else {
                 console.error('Sign Up Failed:', response.statusText);
             }
@@ -68,7 +70,9 @@ function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Sign In Success:', data);
+                console.log('Sign Up Success:', data);
+                localStorage.setItem('token', data.token);
+                window.location.href = '/Lobby';
             } else {
                 console.error('Sign In Failed:', response.statusText);
             }
