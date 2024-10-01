@@ -1,46 +1,65 @@
 body {
-
+    background-color: #005B33; /* צבע הרקע */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Full height of the window */
+    height: 100vh; /* גובה מלא של חלון */
     margin: 0;
-  }
-  
-  .lobby-container {
+}
+
+.lobby-container {
     width: 100%;
-    min-width: 400px; 
+    max-width: 400px;
     margin: 0 auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    border-radius: 10px; 
-    overflow: hidden; 
-  }
-  
-  .lobby-item {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.lobby-item {
     padding: 15px;
-    width: 100%; /* Full width */
+    width: 100%; /* עדכון לרוחב מלא */
     text-align: center;
-    color: #333; /* Dark text for contrast */
+    color: black; /* טקסט שחור */
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease; /* Faster transition for hover */
-    margin: 10px 0; 
-    border-radius: 10px; /* Slightly smaller corner radius */
-  }
-  
-  .lobby-item:nth-child(1) { background-color: #D7C49E; }
-  .lobby-item:nth-child(2) { background-color: #BFAE8E; }
-  .lobby-item:nth-child(3) { background-color: #A5947E; }
-  .lobby-item:nth-child(4) { background-color: #8E7A6C; }
-  .lobby-item:nth-child(5) { background-color: #7B6B5D; }
-  
-  .lobby-item:hover {
-    transform: translateY(-5px); 
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3); 
-  }
-  
-  @media (max-width: 600px) {
-    .lobby-item {
-      font-size: 1.2em; 
+    transition: all 0.3s ease; /* מהירות המעבר */
+    margin: 10px 0; /* רווח בין האובייקטים */
+    border: none; /* ביטול גבול */
+    border-radius: 10px; /* עיגול הפינות */
+    font-size: 1.1em; /* גודל טקסט אחיד */
+    outline: none; /* הסרת קו מתאר */
+}
+
+    .lobby-item:nth-child(1) {
+        background-color: #D7C49E;
     }
-  }
+    /* חום בהיר */
+    .lobby-item:nth-child(2) {
+        background-color: #BFAE8E;
+    }
+    /* חום בינוני */
+    .lobby-item:nth-child(3) {
+        background-color: #A5947E;
+    }
+    /* חום כהה יותר */
+    .lobby-item:nth-child(4) {
+        background-color: #8E7A6C;
+    }
+    /* חום כהה */
+    .lobby-item:nth-child(5) {
+        background-color: #7B6B5D;
+    }
+    /* חום כהה מאוד */
+
+    .lobby-item:hover {
+        transform: scale(1.05); /* מעט הגדלה */
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+        background-color: rgba(255, 255, 255, 0.1); /* הוספת צבע רקע קל כאשר עובר עם העכבר */
+    }
+
+@media (max-width: 600px) {
+    .lobby-item {
+        font-size: 1.2em;
+    }
+}
