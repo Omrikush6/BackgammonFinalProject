@@ -11,7 +11,7 @@ function App() {
     const token = localStorage.getItem('token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const tokenExpiration = payload.exp * 1000; // Convert to milliseconds
+      const tokenExpiration = payload.exp * 1000;
       return Date.now() <= tokenExpiration;
     }
     return false;
@@ -51,8 +51,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
-        <Route path='/Lobby' element={isLoggedIn ? <Lobby onLogout={handleLogout} /> : <Navigate to='/' />} />
-        <Route path='/GameRoom' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
+        <Route path='/lobby' element={isLoggedIn ? <Lobby onLogout={handleLogout} /> : <Navigate to='/' />} />
+        <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
         <Route path='*' element={<Navigate to={isLoggedIn ? '/Lobby' : '/'} />} />
       </Routes>
       <Footer />

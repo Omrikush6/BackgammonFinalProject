@@ -14,33 +14,51 @@ const Lobby = () => {
     const navigate = useNavigate();
 
 
-    const handleLogout = () => {
-        
-        navigate('/');
-         
-    };
+  const startNewGame = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('User not authenticated');
+      return;
+    }
 
+    try {
+      const response = await fetch('https://localhost:7027/api/game/creategame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({  })
+      });
 
+      if (response.ok) {
+        const data = await response.json();
+        console.log('New game started:', data);
+        // Navigate to the Game component or handle accordingly
+        navigate(`/game/ ${data.id}`)
+      } else {
+        console.error('Failed to start new game:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error starting new game:', error);
+    }
+  };
 
-    const lobbyItems = [
-        { label: 'Start New Game', action: () => navigate('/game') },
-        { label: 'Ranking-Table', action: () => console.log('Ranking-Table clicked') },
-        { label: 'Open Room', action: () => console.log('Open Room clicked') },
-        { label: 'Contact-us', action: () => console.log('Contact-us clicked') },
-        { label: 'Log-Out', action: handleLogout }
-    ];
+  const lobbyItems = [
+    { label: 'Start New Game', onClick: startNewGame },
+    { label: 'Ranking-Table', onClick: () => console.log('Ranking-Table') },
+    { label: 'My Profile', onClick: () => console.log('Open Room') },
+    { label: 'Log-Out', onClick: handleGoBack },
+    { label: 'Contact-us', onClick: () => console.log('Contact-us') },
+  ];
 
-    return (
-        <div className="lobby-container">
-            {lobbyItems.map((item) => (
-                <LobbyItem
-                    key={item.label}
-                    label={item.label}
-                    onClick={item.action}
-                />
-            ))}
-        </div>
-    );
+  return (
+    <div className="lobby-container">
+      {lobbyItems.map((item, index) => (
+        <LobbyItem key={index} label={item.label} onClick={item.onClick} />
+      ))}
+    </div>
+  );
 };
 
 export default Lobby;

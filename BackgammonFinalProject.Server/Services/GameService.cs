@@ -14,12 +14,12 @@ namespace BackgammonFinalProject.Services
             _userRepository = userRepository;
         }
 
-        public async Task<Game> CreateGameAsync(User player1, User player2)
+        public async Task<Game> CreateGameAsync(User player1)
         {
             var newGame = new Game
             {
                 StartTime = DateTime.UtcNow,
-                Players = [player1, player2],
+                Players = [player1],
                 GameState = GameState.WaitingForPlayers
             };
             await _gameRepository.CreateAsync(newGame);
@@ -63,7 +63,7 @@ namespace BackgammonFinalProject.Services
                 throw new Exception("Game is not ready to start");
 
             game.GameState = GameState.InProgress;
-            game.CurrentTurn = game.Players[0].Id; // Assuming first player starts
+            game.CurrentTurn = game.Players[0].Id;
             await _gameRepository.UpdateAsync(game);
             return game;
         }
