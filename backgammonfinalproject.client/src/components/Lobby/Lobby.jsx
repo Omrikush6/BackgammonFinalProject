@@ -1,20 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Lobby.css';
+import Cookies from 'js-cookie';
+
 
 const LobbyItem = ({ label, onClick }) => (
-  <div className="lobby-item" onClick={onClick}>
-    {label}
-  </div>
+    <button className="lobby-item" onClick={onClick}>
+        {label}
+    </button>
 );
 
-const Lobby = ({onLogout }) => {
-  const navigate = useNavigate();
+const Lobby = () => {
+    const navigate = useNavigate();
 
-  const handleGoBack = () => {
-    onLogout(); // Call the logout function
-    navigate('/'); // Navigate to the login page
-  };
 
   const startNewGame = async () => {
     const token = localStorage.getItem('token');
@@ -24,19 +22,20 @@ const Lobby = ({onLogout }) => {
     }
 
     try {
-      const response = await fetch('https://localhost:7027/api/games/start', {
+      const response = await fetch('https://localhost:7027/api/game/creategame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Include token in the header
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ /* your game data here */ })
+        body: JSON.stringify({  })
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log('New game started:', data);
         // Navigate to the Game component or handle accordingly
+        navigate(`/game/ ${data.id}`)
       } else {
         console.error('Failed to start new game:', response.statusText);
       }

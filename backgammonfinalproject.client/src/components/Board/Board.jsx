@@ -4,10 +4,10 @@ import './Board.css';
 const Board = () => {
   // Initial setup for checkers
   const points = Array(24).fill(0);
-  points[23] = 2; // 2 checkers on point 24
-  points[12] = 5; // 5 checkers on point 13
-  points[7] = 3;  // 3 checkers on point 8
-  points[5] = 6;  // 6 checkers on point 6
+  points[23] = 2; // 2 checkers on point 24 (Player 1)
+  points[12] = 5; // 5 checkers on point 13 (Player 2)
+  points[7] = 3;  // 3 checkers on point 8 (Player 1)
+  points[5] = 6;  // 6 checkers on point 6 (Player 2)
 
   return (
     <div className="backgammon-board">

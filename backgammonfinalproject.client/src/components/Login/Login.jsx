@@ -1,15 +1,14 @@
 ﻿import React, { useState, useEffect } from 'react';
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
+
 
 function Login() {
-    const [username, setUserName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-
-    const togglePasswordVisibility = (toggle) => {
-        setShowPassword(toggle);
-    };
+    const navigate = useNavigate();
+    const [username, setUserName] = useState(''); 
+    const [email, setEmail] = useState(''); 
+    const [password, setPassword] = useState(''); 
+    
 
     useEffect(() => {
         const signUpButton = document.getElementById('signUp');
@@ -56,8 +55,9 @@ function Login() {
 
     const handleLognIn = async (e) => {
         e.preventDefault();
-        const usernameInput = e.target.username.value;
-        const passwordInput = e.target.password.value;
+
+        const usernameInput = e.target.username.value; 
+        const passwordInput = e.target.password.value; 
 
         try {
             const response = await fetch('https://localhost:7027/api/Auth/login', {
@@ -70,9 +70,9 @@ function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Sign Up Success:', data);
-                localStorage.setItem('token', data.token);
-                window.location.href = '/Lobby';
+                console.log('Sign In Success:', data);
+                navigate('/lobby');
+                
             } else {
                 console.error('Sign In Failed:', response.statusText);
             }

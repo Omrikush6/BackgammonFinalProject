@@ -3,6 +3,9 @@ using BackgammonFinalProject.Models;
 using BackgammonFinalProject.Repositories.Interfaces;
 using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace BackgammonFinalProject.Controllers
 {
@@ -20,22 +23,28 @@ namespace BackgammonFinalProject.Controllers
         }
 
         [HttpPost("CreateGame")]
-        public async Task<ActionResult<GameDto>> CreateGame([FromBody] List<int> playerIds)
+        public async Task<ActionResult<GameDto>> CreateGame()
         {
-            if (playerIds.Count != 2)
-                return BadRequest("Exactly two players are required to create a game.");
+            var playerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (playerId == null) { return NotFound($"User with ID {playerId} not found."); }
 
-            var players = new List<User>();
-            foreach (var playerId in playerIds)
-            {
-                var user = await _userRepository.GetByIdAsync(playerId);
-                if (user == null)
-                    return NotFound($"User with ID {playerId} not found.");
-                players.Add(user);
-            }
+            var player = await _userRepository.GetByIdAsync(int.Parse(playerId.Value));
+            if (player == null)
+                return NotFound($"User with ID {playerId} not found.");
 
-            var newGame = await _gameService.CreateGameAsync(players[0], players[1]);
+            var newGame = await _gameService.CreateGameAsync(player);
             return Ok(MapGameToDto(newGame));
+        }
+
+        [HttpPost("JoinGame/{gameId}")]
+        public async Task<ActionResult<GameDto>> JoinGame(int gameId, [FromBody] int userId)
+        {
+            var result = await _gameService.JoinGameAsync(gameId, userId);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(MapGameToDto(result.Game!));
         }
 
         [HttpGet("{gameId}")]
@@ -57,19 +66,9 @@ namespace BackgammonFinalProject.Controllers
             return Ok(gameDtos);
         }
 
-        [HttpPost("JoinGame/{gameId}")]
-        public async Task<ActionResult<GameDto>> JoinGame(int gameId, [FromBody] int userId)
-        {
-            var result = await _gameService.JoinGameAsync(gameId, userId);
-            if (result.Game == null || !result.Success)
-            {
-                return BadRequest(result.Message ?? "Join game operation failed.");
-            }
-            return Ok(MapGameToDto(result.Game));
-        }
+        //TODO create startgame method
 
-
-        private static GameDto MapGameToDto(Game game)
+        public static GameDto MapGameToDto(Game game)
         {
             return new GameDto
             {
@@ -88,6 +87,5 @@ namespace BackgammonFinalProject.Controllers
                 }).ToList() ?? new List<MessageDto>()
             };
         }
-
     }
 }

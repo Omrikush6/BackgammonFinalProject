@@ -52,7 +52,12 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = null;
         options.JsonSerializerOptions.MaxDepth = 32;
     });
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.ReferenceHandler = null;
+        options.PayloadSerializerOptions.MaxDepth = 32;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -89,29 +94,26 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         builder => builder.WithOrigins("https://localhost:5173") // React app URL
                           .AllowAnyHeader()
-                          .AllowAnyMethod());
+                          .AllowAnyMethod()
+                          .AllowCredentials());
 });
 
 var app = builder.Build();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseCors("AllowReactApp");  
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapHub<GameHub>("/gameHub");
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapFallbackToFile("index.html");
-
-app.UseCors("AllowReactApp");
+app.MapHub<GameHub>("/gameHub");
 
 app.Run();
