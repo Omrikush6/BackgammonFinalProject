@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
+
 
 function Login() {
+    const navigate = useNavigate();
     const [username, setUserName] = useState(''); 
     const [email, setEmail] = useState(''); 
     const [password, setPassword] = useState(''); 
@@ -53,6 +56,7 @@ function Login() {
 
     const handleLognIn = async (e) => { 
         e.preventDefault();
+
         const usernameInput = e.target.username.value; 
         const passwordInput = e.target.password.value; 
 
@@ -68,6 +72,7 @@ function Login() {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Sign In Success:', data);
+                navigate('/lobby');
                 
             } else {
                 console.error('Sign In Failed:', response.statusText);

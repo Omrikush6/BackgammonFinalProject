@@ -5,7 +5,7 @@ import Board from '../Board/Board';
 function Game() {
   return (
     <>
-   <Board/>
+   <div className="div-game">comming soon.....</div>
     </>
   )
 }
