@@ -5,7 +5,6 @@ body {
     align-items: center;
     height: 100vh; /* Full height of the window */
     margin: 0;
-    font-family: 'Arial', sans-serif; /* Change font for better readability */
   }
   
   .lobby-container {
