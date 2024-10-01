@@ -1,9 +1,9 @@
 body {
-    background-color: #005B33; /* Χ¦Χ‘ΧΆ Χ”Χ¨Χ§ΧΆ */
+    background-color: #005B33; /* φας δψχς */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Χ’Χ•Χ‘Χ” ΧΧΧ Χ©Χ Χ—ΧΧ•Χ */
+    height: 100vh; /* βεαδ ξμΰ ωμ ημεο */
     margin: 0;
 }
 
@@ -34,25 +34,25 @@ body {
     .lobby-item:nth-child(1) {
         background-color: #D7C49E;
     }
-    /* Χ—Χ•Χ Χ‘Χ”Χ™Χ¨ */
+    /* ηεν αδιψ */
     .lobby-item:nth-child(2) {
         background-color: #BFAE8E;
     }
-    /* Χ—Χ•Χ Χ‘Χ™Χ Χ•Χ Χ™ */
+    /* ηεν αιπεπι */
     .lobby-item:nth-child(3) {
         background-color: #A5947E;
     }
-    /* Χ—Χ•Χ Χ›Χ”Χ” Χ™Χ•ΧªΧ¨ */
+    /* ηεν λδδ ιεϊψ */
     .lobby-item:nth-child(4) {
         background-color: #8E7A6C;
     }
-    /* Χ—Χ•Χ Χ›Χ”Χ” */
+    /* ηεν λδδ */
     .lobby-item:nth-child(5) {
         background-color: #7B6B5D;
     }
-    /* Χ—Χ•Χ Χ›Χ”Χ” ΧΧΧ•Χ“ */
+    /* ηεν λδδ ξΰεγ */
 
     .lobby-item:hover {
-        transform: scale(1.05); /* ΧΧΆΧ Χ”Χ’Χ“ΧΧ” */
+        transform: scale(1.05); /* ξςθ δβγμδ */
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-        background-color: rgba(255, 255, 255, 0.1); /* Χ”Χ•Χ΅Χ¤Χª Χ¦Χ‘ΧΆ
+        background-color: rgba(255, 255, 255, 0.1); /* δερτϊ φας

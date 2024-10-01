@@ -1,5 +1,5 @@
 import React from 'react'
-import './Game.css';
+import './GameRoom.css';
 import Board from '../Board/Board';
 
 function Game() {
