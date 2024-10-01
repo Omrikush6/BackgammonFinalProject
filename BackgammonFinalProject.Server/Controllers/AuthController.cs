@@ -9,8 +9,8 @@ using BackgammonFinalProject.Repositories;
 using System.Security.Cryptography;
 using BackgammonFinalProject.DTOs;
 using BackgammonFinalProject.Repositories.Interfaces;
-using BackgammonFinalProject.Services.Interfaces;
 using System.Text.RegularExpressions;
+using BackgammonFinalProject.Services;
 
 namespace BackgammonFinalProject.Controllers
 {
@@ -20,9 +20,9 @@ namespace BackgammonFinalProject.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        private readonly IHashingService _hashingService;
+        private readonly  HashingService _hashingService;
 
-        public AuthController(IUserRepository userRepository, IConfiguration configuration, IHashingService hashingService)
+        public AuthController(IUserRepository userRepository, IConfiguration configuration, HashingService hashingService)
         {
             _userRepository = userRepository;
             _configuration = configuration;

@@ -1,10 +1,9 @@
-﻿using BackgammonFinalProject.Services.Interfaces;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace BackgammonFinalProject.Services
 {
-    public class HashingService : IHashingService
+    public class HashingService
     {
         public string HashPassword(string password)
         {

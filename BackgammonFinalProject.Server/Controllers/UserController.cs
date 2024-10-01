@@ -1,7 +1,8 @@
 ﻿using BackgammonFinalProject.DTOs;
 using BackgammonFinalProject.Models;
 using BackgammonFinalProject.Repositories.Interfaces;
-using BackgammonFinalProject.Services.Interfaces;
+using BackgammonFinalProject.Server.Services;
+using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,14 @@ namespace BackgammonFinalProj.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly IHashingService _hashingService;
+        private readonly HashingService _hashingService;
+        private readonly MappingService _mappingService;
 
-        public UserController(IUserRepository userRepository, IHashingService hashingservice)
+        public UserController(IUserRepository userRepository, HashingService hashingservice, MappingService mappingservice)
         {
             _userRepository = userRepository;
             _hashingService = hashingservice;
+            _mappingService = mappingservice;
         }
 
         [HttpGet("{id}")]
@@ -31,13 +34,7 @@ namespace BackgammonFinalProj.Controllers
             {
                 return NotFound();
             }
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt
-            });
+            return Ok(_mappingService.MapUserToDto(user));
         }
 
         [HttpGet("GetUser/{username}")]
@@ -48,13 +45,7 @@ namespace BackgammonFinalProj.Controllers
             {
                 return NotFound();
             }
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt
-            });
+            return Ok(_mappingService.MapUserToDto(user));
         }
 
         [HttpPut("Update")]

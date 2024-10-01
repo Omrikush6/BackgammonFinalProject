@@ -8,7 +8,11 @@ function Login() {
     const [username, setUserName] = useState(''); 
     const [email, setEmail] = useState(''); 
     const [password, setPassword] = useState(''); 
-    
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = (toggle) => {
+        setShowPassword(toggle);
+    };
 
     useEffect(() => {
         const signUpButton = document.getElementById('signUp');
@@ -32,6 +36,7 @@ function Login() {
     const handleSignUp = async (e) => {
         e.preventDefault();
         try {
+            alert(username, password)
             const response = await fetch('https://localhost:7027/api/Auth/signup', {
                 method: 'POST',
                 headers: {
@@ -42,7 +47,7 @@ function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Sign Up Success:', data);
+                console.log('Sign In Success:', data);
                 localStorage.setItem('token', data.token);
                 window.location.href = '/Lobby';
             } else {
@@ -55,9 +60,8 @@ function Login() {
 
     const handleLognIn = async (e) => {
         e.preventDefault();
-
-        const usernameInput = e.target.username.value; 
-        const passwordInput = e.target.password.value; 
+        const usernameInput = e.target.username.value;
+        const passwordInput = e.target.password.value;
 
         try {
             const response = await fetch('https://localhost:7027/api/Auth/login', {
@@ -71,7 +75,8 @@ function Login() {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Sign In Success:', data);
-                navigate('/lobby');
+                localStorage.setItem('token', data.token);
+                window.location.href = '/Lobby';
                 
             } else {
                 console.error('Sign In Failed:', response.statusText);

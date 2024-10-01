@@ -22,7 +22,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIsLoggedIn(checkToken());
-    }, 600000); // Check token every 10 minutes
+    }, 600000);
 
     return () => clearInterval(interval);
   }, [checkToken]);
@@ -41,8 +41,8 @@ function App() {
       } catch (error) {
         console.error('Error during logout:', error);
       } finally {
-        localStorage.removeItem('token'); // Clear the token
-        setIsLoggedIn(false); // Update the state
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
       }
     }
   };

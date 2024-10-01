@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BackgammonFinalProject.Services.Interfaces;
 using BackgammonFinalProject.Services;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -13,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using BackgammonFinalProject.Hubs;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using BackgammonFinalProject.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BackgammonDbContext>(options =>
@@ -20,8 +20,9 @@ builder.Services.AddDbContext<BackgammonDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
-builder.Services.AddScoped<IHashingService, HashingService>();
+builder.Services.AddScoped<HashingService>();
 builder.Services.AddScoped<GameService>();
+builder.Services.AddScoped<MappingService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

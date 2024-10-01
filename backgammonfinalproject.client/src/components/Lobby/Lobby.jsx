@@ -10,8 +10,13 @@ const LobbyItem = ({ label, onClick }) => (
     </button>
 );
 
-const Lobby = () => {
+const Lobby = ({onLogout }) => {
     const navigate = useNavigate();
+
+    const handleGoBack = () => {
+      onLogout(); // Call the logout function
+      navigate('/'); // Navigate to the login page
+    };
 
 
   const startNewGame = async () => {
@@ -34,7 +39,6 @@ const Lobby = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('New game started:', data);
-        // Navigate to the Game component or handle accordingly
         navigate(`/game/ ${data.id}`)
       } else {
         console.error('Failed to start new game:', response.statusText);
@@ -47,7 +51,7 @@ const Lobby = () => {
   const lobbyItems = [
     { label: 'Start New Game', onClick: startNewGame },
     { label: 'Ranking-Table', onClick: () => console.log('Ranking-Table') },
-    { label: 'My Profile', onClick: () => console.log('Open Room') },
+    { label: 'My Profile', onClick: () => console.log('My Profile') },
     { label: 'Log-Out', onClick: handleGoBack },
     { label: 'Contact-us', onClick: () => console.log('Contact-us') },
   ];

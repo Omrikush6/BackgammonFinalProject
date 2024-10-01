@@ -1,6 +1,7 @@
 ﻿using BackgammonFinalProject.DTOs;
 using BackgammonFinalProject.Models;
 using BackgammonFinalProject.Repositories.Interfaces;
+using BackgammonFinalProject.Server.Services;
 using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -15,11 +16,13 @@ namespace BackgammonFinalProject.Controllers
     {
         private readonly GameService _gameService;
         private readonly IUserRepository _userRepository;
+        private readonly MappingService _mappingService;
 
-        public GameController(GameService gameService, IUserRepository userRepository)
+        public GameController(GameService gameService, IUserRepository userRepository, MappingService mappingService)
         {
             _gameService = gameService;
             _userRepository = userRepository;
+            _mappingService = mappingService;
         }
 
         [HttpPost("CreateGame")]
@@ -33,7 +36,7 @@ namespace BackgammonFinalProject.Controllers
                 return NotFound($"User with ID {playerId} not found.");
 
             var newGame = await _gameService.CreateGameAsync(player);
-            return Ok(MapGameToDto(newGame));
+            return Ok(_mappingService.MapGameToDto(newGame));
         }
 
         [HttpPost("JoinGame/{gameId}")]
@@ -44,7 +47,7 @@ namespace BackgammonFinalProject.Controllers
             {
                 return BadRequest(result.Message);
             }
-            return Ok(MapGameToDto(result.Game!));
+            return Ok(_mappingService.MapGameToDto(result.Game!));
         }
 
         [HttpGet("{gameId}")]
@@ -55,37 +58,19 @@ namespace BackgammonFinalProject.Controllers
             {
                 return NotFound("Game not found.");
             }
-            return Ok(MapGameToDto(game));
+            return Ok(_mappingService.MapGameToDto(game));
         }
 
         [HttpGet("AllGames")]
         public async Task<ActionResult<List<GameDto>>> GetAllGames()
         {
             var games = await _gameService.GetAllGamesAsync();
-            var gameDtos = games.Select(MapGameToDto).ToList();
+            var gameDtos = games.Select(_mappingService.MapGameToDto).ToList();
             return Ok(gameDtos);
         }
 
         //TODO create startgame method
 
-        public static GameDto MapGameToDto(Game game)
-        {
-            return new GameDto
-            {
-                Id = game.Id,
-                GameState = game.GameState,
-                CurrentTurn = game.CurrentTurn,
-                StartTime = game.StartTime,
-                EndTime = game.EndTime,
-                PlayerIds = game.Players?.Select(p => p.Id).ToList() ?? new List<int>(),
-                Messages = game.Messages?.Select(m => new MessageDto
-                {
-                    Id = m.Id,
-                    Content = m.Content,
-                    Timestamp = m.Timestamp,
-                    SenderId = m.Sender?.Id ?? 0
-                }).ToList() ?? new List<MessageDto>()
-            };
-        }
+       
     }
 }
