@@ -65,6 +65,10 @@ function GameRoom() {
       setGame(updatedGame);
     });
 
+    connection.on("messagereceived", (userId, message) => {
+      setMessages(prevMessages => [...prevMessages, { senderId: userId, content: message }]);
+    });
+
     try {
       await connection.start();
       console.log("SignalR Connected.");

@@ -4,6 +4,7 @@ import Login from './components/Login/Login';
 import Lobby from './components/Lobby/Lobby';
 import GameRoom from './components/GameRoom/GameRoom';
 import Footer from './components/Footer/Footer';
+import Contact from './components/Contact/Contact'
 import './App.css';
 
 function App() {
@@ -53,7 +54,9 @@ function App() {
         <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
         <Route path='/lobby' element={isLoggedIn ? <Lobby onLogout={handleLogout} /> : <Navigate to='/' />} />
         <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path='*' element={<Navigate to={isLoggedIn ? '/Lobby' : '/'} />} />
+        
       </Routes>
       <Footer />
     </BrowserRouter>
