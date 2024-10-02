@@ -26,9 +26,18 @@ namespace BackgammonFinalProject.Repositories
 
         public async Task<Game> CreateAsync(Game game)
         {
-            _context.Games.Add(game);
-            await _context.SaveChangesAsync();
-            return game;
+            try
+            {
+                _context.Games.Add(game);
+                await _context.SaveChangesAsync();
+                return game;
+            }
+            catch (Exception e)
+            {
+                string message = e.Message;
+
+                return new();
+            }
         }
 
         public async Task UpdateAsync(Game game)

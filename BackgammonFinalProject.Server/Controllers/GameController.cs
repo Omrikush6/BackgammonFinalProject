@@ -28,15 +28,23 @@ namespace BackgammonFinalProject.Controllers
         [HttpPost("CreateGame")]
         public async Task<ActionResult<GameDto>> CreateGame()
         {
-            var playerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (playerId == null) { return NotFound($"User with ID {playerId} not found."); }
+            try
+            {
+                var playerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (playerId == null) { return NotFound($"User with ID {playerId} not found."); }
 
-            var player = await _userRepository.GetByIdAsync(int.Parse(playerId.Value));
-            if (player == null)
-                return NotFound($"User with ID {playerId} not found.");
+                var player = await _userRepository.GetByIdAsync(int.Parse(playerId.Value));
+                if (player == null)
+                    return NotFound($"User with ID {playerId} not found.");
 
-            var newGame = await _gameService.CreateGameAsync(player);
-            return Ok(_mappingService.MapGameToDto(newGame));
+                var newGame = await _gameService.CreateGameAsync(player);
+                return Ok(_mappingService.MapGameToDto(newGame));
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
+           
         }
 
         [HttpPost("JoinGame/{gameId}")]

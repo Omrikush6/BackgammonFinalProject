@@ -5,7 +5,7 @@ function Footer() {
     return (
         <footer>
             <p>
-                Created By Tal Klein & Omri Sadovnik - Look our insperatino <a href="https://www.youtube.com/watch?v=AbpIJACKZ2g">Daniel Rayfer</a>
+                Created By Tal Klein & Omri Sadovnik - Look our inspiration <a href="https://www.youtube.com/watch?v=AbpIJACKZ2g">Daniel Rayfer</a>
             </p>
         </footer>
     )
