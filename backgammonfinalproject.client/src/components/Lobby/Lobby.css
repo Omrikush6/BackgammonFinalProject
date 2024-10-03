@@ -7,6 +7,16 @@ body {
     margin: 0;
 }
 
+/* סגנון חדש עבור lobby-layout */
+.lobby-layout {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
 .lobby-container {
     width: 100%;
     max-width: 400px;
@@ -14,6 +24,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
+    z-index: 1; /* וודא שזה מעל הרקע */
 }
 
 .lobby-item {
@@ -34,23 +45,22 @@ body {
     .lobby-item:nth-child(1) {
         background-color: #D7C49E;
     }
-    /* חום בהיר */
+
     .lobby-item:nth-child(2) {
         background-color: #BFAE8E;
     }
-    /* חום בינוני */
+
     .lobby-item:nth-child(3) {
         background-color: #A5947E;
     }
-    /* חום כהה יותר */
+
     .lobby-item:nth-child(4) {
         background-color: #8E7A6C;
     }
-    /* חום כהה */
+
     .lobby-item:nth-child(5) {
         background-color: #7B6B5D;
     }
-    /* חום כהה מאוד */
 
     .lobby-item:hover {
         transform: scale(1.05); /* מעט הגדלה */
@@ -58,8 +68,31 @@ body {
         background-color: rgba(255, 255, 255, 0.1); /* הוספת צבע רקע קל כאשר עובר עם העכבר */
     }
 
+/* סגנון חדש עבור ranking-table-sidebar */
+.ranking-table-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 2;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+}
+
+    .ranking-table-sidebar.show {
+        transform: translateX(0);
+    }
+
 @media (max-width: 600px) {
     .lobby-item {
         font-size: 1.2em;
+    }
+
+    .ranking-table-sidebar {
+        width: 100%;
     }
 }
