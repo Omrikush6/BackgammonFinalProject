@@ -16,5 +16,8 @@ namespace BackgammonFinalProject.DTOs
 
         [Required]
         public int SenderId { get; set; }
+
+        [Required]
+        public string SenderName { get; set; }
     }
 }

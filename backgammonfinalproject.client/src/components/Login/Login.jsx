@@ -1,9 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useContext } from 'react';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../App';
 
 function Login() {
     const navigate = useNavigate();
+    const {login} = useContext(UserContext)
     const [isSignUp, setIsSignUp] = useState(false);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -60,8 +62,8 @@ function Login() {
             if (response.ok) {
                 const data = await response.json();
                 console.log(isSignUp ? 'Sign Up Success:' : 'Sign In Success:', data);
-                localStorage.setItem('token', data.token);
-                window.location.href = '/lobby'
+                login(data.token)
+                navigate('/lobby')
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || `${isSignUp ? 'Sign Up' : 'Sign In'} Failed. Please try again.`);
@@ -131,13 +133,16 @@ function Login() {
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">
-                            <h1>Welcome Back!</h1>
-                            <p>To keep connected with us please login with your personal info</p>
+                        <h1>Hello, Let's play!</h1>
+                        <p>Enter your personal details and start your journey with us</p>
+                        <a>Already have an account? 👇 click below to sign in</a>
                             <button className="ghost" id="signIn">Sign In</button>
                         </div>
                         <div className="overlay-panel overlay-right">
-                            <h1>Hello, Let's play!</h1>
-                            <p>Enter your personal details and start your journey with us</p>
+                        <h1>Welcome Back!</h1>
+                        <p>To keep connected with us please login with your personal info</p>
+                        <a>Don't have an account yet? 👇 click here to create one!</a>
+                        
                             <button className="ghost" id="signUp">Sign Up</button>
                         </div>
                     </div>
