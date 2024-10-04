@@ -75,13 +75,13 @@ body {
     left: 0;
     width: 300px;
     height: 46%;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: transparent;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     z-index: 2;
     transition: transform 0.3s ease-in-out;
     transform: translateX(-100%);
-    border-radius:15px;
+    border-radius: 15px;
 }
 
     .ranking-table-sidebar.show {
@@ -97,3 +97,84 @@ body {
         width: 100%;
     }
 }
+
+.contact-us-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 370px;
+    height: 62%;
+    background-color: #8E7A6C; /* רקע לבן עם שקיפות */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); /* הצללה כהה יותר */
+    overflow-y: auto;
+    z-index: 2;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+    border-radius: 15px;
+    padding: 20px; /* רווח פנימי */
+}
+
+    .contact-us-sidebar.show {
+        transform: translateX(0);
+    }
+
+.contact-us-container h2 {
+    color: black; /* צבע כהה לכותרת */
+    margin-bottom: 15px; /* רווח בין הכותרת לתוכן */
+    justify-content: center;
+    text-align: center;
+    border-bottom: 2px solid #1e2a6b; /* קו תחתון צבעוני */
+    padding-bottom: 10px; /* רווח בין הטקסט לקו */
+}
+
+.contact-us-form {
+    border-radius: 15px;
+    background-color: transparent;
+    
+}
+
+.contact-us-container input,
+.contact-us-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px; /* רווח בין שדות */
+    border: 1px solid #ccc; /* גבול קל */
+    border-radius: 12px; /* פינות מעוגלות */
+    font-size: 16px; /* גודל טקסט */
+    color: #333; /* צבע טקסט */
+    background-color: rgba(255, 255, 255, 0.9); /* רקע לבן עם שקיפות */
+}
+
+.contact-us-container button {
+    background-color: #1e2a6b; /* צבע רקע כהה */
+    color: #fff; /* צבע טקסט לבן */
+    padding: 10px 15px; /* רווח פנימי */
+    border: none; /* ללא גבול */
+    border-radius: 5px; /* פינות מעוגלות */
+    cursor: pointer; /* יד עם לחצן */
+    font-size: 16px; /* גודל טקסט */
+    transition: background-color 0.3s; /* מעבר חלק */
+    border-bottom: 2px solid #1e2a6b; /* קו תחתון צבעוני */
+    padding-bottom: 10px; /* רווח בין הטקסט לקו */
+}
+
+    .contact-us-container button:hover {
+        background-color: #007B5F; /* צבע רקע כאשר מעבירים את העכבר */
+    }
+
+.contact-us-container p {
+    margin-top: 15px; /* רווח מעל הטקסט */
+    font-size: 18px;
+    color: black; /* צבע טקסט כהה יותר */
+    border-top: 2px solid #1e2a6b; /* קו תחתון צבעוני */
+    padding-top: 10px; /* רווח בין הטקסט לקו */
+}
+
+.contact-us-container a {
+    color: #141847; /* צבע לינק */
+    text-decoration: underline; /* קו תחתון */
+}
+
+
+
+

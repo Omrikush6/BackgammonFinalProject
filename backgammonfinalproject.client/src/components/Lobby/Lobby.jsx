@@ -10,9 +10,25 @@ const LobbyItem = ({ label, onClick }) => (
     </button>
 );
 
+const ContactUs = ({ onClose }) => {
+    return (
+        <div className="contact-us-container">
+            <h2>Contact Us</h2>
+            <form className="contact-us-form">
+                <input type="text" placeholder="Your Name" required />
+                <input type="email" placeholder="Your Email" required />
+                <textarea placeholder="Your Message" required></textarea>
+                <button type="submit">Send</button>
+            </form>
+            <p>Contact the developers: <a href="tel:+1234567890">+1 (234) 567-890</a></p>
+        </div>
+    );
+};
+
 const Lobby = ({ onLogout }) => {
     const navigate = useNavigate();
     const [showRankingTable, setShowRankingTable] = useState(false);
+    const [showContactUs, setShowContactUs] = useState(false);
 
     const handleGoBack = () => {
         onLogout();
@@ -50,12 +66,16 @@ const Lobby = ({ onLogout }) => {
         setShowRankingTable(!showRankingTable);
     };
 
+    const toggleContactUs = () => {
+        setShowContactUs(!showContactUs);
+    };
+
     const lobbyItems = [
         { label: 'Start New Game', onClick: startNewGame },
         { label: 'Ranking-Table', onClick: toggleRankingTable },
         { label: 'My Profile', onClick: () => console.log('My Profile') },
         { label: 'Log-Out', onClick: handleGoBack },
-        { label: 'Contact-us', onClick: () => console.log('Contact-us') },
+        { label: 'Contact-us', onClick: toggleContactUs },
     ];
 
     return (
@@ -68,6 +88,11 @@ const Lobby = ({ onLogout }) => {
                     <LobbyItem key={index} label={item.label} onClick={item.onClick} />
                 ))}
             </div>
+            {showContactUs && (
+                <div className={`contact-us-sidebar ${showContactUs ? 'show' : ''}`}>
+                    <ContactUs />
+                </div>
+            )}
         </div>
     );
 };
