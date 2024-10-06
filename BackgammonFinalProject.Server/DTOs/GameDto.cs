@@ -11,6 +11,8 @@ namespace BackgammonFinalProject.DTOs
 
         public int CurrentTurn { get; set; }
 
+        public int? WinnerId { get; set; }
+
         public DateTime StartTime { get; set; }
 
         public DateTime? EndTime { get; set; }
@@ -18,5 +20,6 @@ namespace BackgammonFinalProject.DTOs
         public List<int> PlayerIds { get; set; } = new List<int>();
 
         public List<MessageDto> Messages { get; set; } = new List<MessageDto>();
+        public string? CurrentStateJson { get; set; }
     }
 }

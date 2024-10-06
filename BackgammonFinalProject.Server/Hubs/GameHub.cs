@@ -1,4 +1,5 @@
 ﻿using BackgammonFinalProject.Controllers;
+using BackgammonFinalProject.DTOs;
 using BackgammonFinalProject.Models;
 using BackgammonFinalProject.Server.Services;
 using BackgammonFinalProject.Services;
@@ -12,12 +13,12 @@ namespace BackgammonFinalProject.Hubs
     public class GameHub : Hub
     {
         private readonly GameService _gameService;
-        private readonly MappingService _mappingservice;
+        private readonly MappingService _mappingService;
 
         public GameHub(GameService gameService, MappingService mappingService)
         {
             _gameService = gameService;
-            _mappingservice = mappingService;
+            _mappingService = mappingService;
         }
 
         public async Task JoinGame(int gameId, int userId)
@@ -28,7 +29,7 @@ namespace BackgammonFinalProject.Hubs
                 if (result.Success)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
-                    await Clients.Group(gameId.ToString()).SendAsync("PlayerJoined", _mappingservice.MapGameToDto(result.Game!));
+                    await Clients.Group(gameId.ToString()).SendAsync("PlayerJoined", _mappingService.MapGameToDto(result.Game!));
                 }
                 else
                 {
@@ -41,20 +42,43 @@ namespace BackgammonFinalProject.Hubs
             }
         }
 
+        public async Task StartGame(int gameId)
+        {
+            var result = await _gameService.StartGameAsync(gameId);
+            if (result.Success)
+            {
+                await Clients.Group(gameId.ToString()).SendAsync("GameStarted", _mappingService.MapGameToDto(result.Game!));
+            }
+            else
+            {
+                throw new HubException(result.Message);
+            }
+        }
+
+        public async Task UpdateGame(int gameId, GameDto gameDto)
+        {
+            var result = await _gameService.UpdateGameAsync(gameId, gameDto);
+            if (result.Success)
+            {
+                await Clients.Group(gameId.ToString()).SendAsync("GameUpdated", _mappingService.MapGameToDto(result.Game!));
+            }
+            else
+            {
+                throw new HubException(result.Message);
+            }
+        }
+
         public async Task SendMessage(int gameId, int playerId, string messageContent)
         {
             var result = await _gameService.AddMessageAsync(gameId, playerId, messageContent);
             if (result.Success)
             {
-                await Clients.Group(gameId.ToString()).SendAsync("MessageReceived", _mappingservice.MapMessageToDto(result.message!));
+                await Clients.Group(gameId.ToString()).SendAsync("MessageReceived", _mappingService.MapMessageToDto(result.message!));
             }
             else
             {
-                await Clients.Caller.SendAsync("MessageError", _mappingservice.MapMessageToDto(result.message!));
+                await Clients.Caller.SendAsync("MessageError", result.Message);
             }
         }
-
-        // TODO: Implement StartGame and MakeMove methods
-
     }
 }
