@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Lobby.css';
 import { UserContext } from '../../App';
 import { useContext } from 'react';
 import Header from '../Header/Header';
-import Cookies from 'js-cookie';
+import './Lobby.css';
 import ActivePlayers from '../ActivePlayers/ActivePlayers';
-import Chat from '../Chat/Chat';
+
 
 
 const LobbyItem = ({ label, onClick, ghost }) => (
