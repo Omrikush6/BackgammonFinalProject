@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Chat.css'; // כאן אתה יכול לייבא את ה-CSS שלך אם יש
+import './Chat.css'; 
 
 const Chat = () => {
     const [messages, setMessages] = useState([]);

@@ -10,7 +10,7 @@ body {
     margin: 0;
 }
 
-/* ñâðåï çãù òáåø lobby-layout */
+/* lobby-layout */
 .lobby-layout {
     position: relative;
     display: flex;
@@ -68,24 +68,6 @@ body {
 .lobby-item:active {
     transform: scale(0.95);
 }
-
-    .lobby-item:nth-child(1) {background-color: #D7C49E;}
-
-    .lobby-item:nth-child(2) {
-        background-color: #BFAE8E;
-    }
-
-    .lobby-item:nth-child(3) {
-        background-color: #A5947E;
-    }
-
-    .lobby-item:nth-child(4) {
-        background-color: #8E7A6C;
-    }
-
-    .lobby-item:nth-child(5) {
-        background-color: #7B6B5D;
-    }
 
 
 .lobby-item.ghost {
