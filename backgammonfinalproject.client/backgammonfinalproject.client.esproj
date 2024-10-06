@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\components\ActivePlayers\" />
+    <Folder Include="src\components\Chat\" />
     <Folder Include="src\Routes\" />
   </ItemGroup>
 </Project>

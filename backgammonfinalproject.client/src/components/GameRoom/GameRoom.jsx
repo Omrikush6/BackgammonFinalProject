@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import Board from '../Board/Board';
 import './GameRoom.css';
-import  {jwtDecode}   from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 function GameRoom() {
   const { gameId } = useParams();
@@ -112,7 +112,7 @@ function GameRoom() {
   }
 
   return (
-    <div className="game-room">
+      <div className="game-room">
       <div className="game-board">
         <Board game={game} />
       </div>

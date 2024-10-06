@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Lobby.css';
 import Cookies from 'js-cookie';
 import ActivePlayers from '../ActivePlayers/ActivePlayers';
+import Chat from '../Chat/Chat';
 
 const LobbyItem = ({ label, onClick }) => (
     <button className="lobby-item" onClick={onClick}>
@@ -79,6 +80,7 @@ const Lobby = ({ onLogout }) => {
     ];
 
     return (
+        <>
         <div className="lobby-layout">
             <div className={`ranking-table-sidebar ${showRankingTable ? 'show' : ''}`}>
                 <ActivePlayers />
@@ -93,7 +95,10 @@ const Lobby = ({ onLogout }) => {
                     <ContactUs />
                 </div>
             )}
-        </div>
+            </div>
+        </>
+        
+        
     );
 };
 
