@@ -1,105 +1,78 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Lobby.css';
+import { UserContext } from '../../App';
+import { useContext } from 'react';
+import Header from '../Header/Header';
 import Cookies from 'js-cookie';
 import ActivePlayers from '../ActivePlayers/ActivePlayers';
 import Chat from '../Chat/Chat';
 
-const LobbyItem = ({ label, onClick }) => (
-    <button className="lobby-item" onClick={onClick}>
-        {label}
-    </button>
+
+const LobbyItem = ({ label, onClick, ghost }) => (
+  <button className={`lobby-item ${ghost ? 'ghost' : ''}`} onClick={onClick}>
+    {label}
+  </button>
 );
 
-const ContactUs = ({ onClose }) => {
-    return (
-        <div className="contact-us-container">
-            <h2>Contact Us</h2>
-            <form className="contact-us-form">
-                <input type="text" placeholder="Your Name" required />
-                <input type="email" placeholder="Your Email" required />
-                <textarea placeholder="Your Message" required></textarea>
-                <button type="submit">Send</button>
-            </form>
-            <p>Contact the developers: <a href="tel:+1234567890">+1 (234) 567-890</a></p>
-        </div>
-    );
-};
-
 const Lobby = ({ onLogout }) => {
-    const navigate = useNavigate();
-    const [showRankingTable, setShowRankingTable] = useState(false);
-    const [showContactUs, setShowContactUs] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useContext(UserContext);
 
-    const handleGoBack = () => {
-        onLogout();
-        navigate('/');
-    };
+  const handleGoBack = () => {
+    onLogout();
+    navigate('/');
+  };
+  
 
-    const startNewGame = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('User not authenticated');
-            return;
-        }
-        try {
-            const response = await fetch('https://localhost:7027/api/game/creategame', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({})
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log('New game started:', data);
-                navigate(`/game/${data.id}`)
-            } else {
-                console.error('Failed to start new game:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error starting new game:', error);
-        }
-    };
+  const startNewGame = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('User not authenticated');
+      return;
+    }
 
-    const toggleRankingTable = () => {
-        setShowRankingTable(!showRankingTable);
-    };
+    try {
+      const response = await fetch('https://localhost:7027/api/Game/CreateGame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
 
-    const toggleContactUs = () => {
-        setShowContactUs(!showContactUs);
-    };
+      if (response.ok) {
+        const data = await response.json();
+        console.log('New game started:', data);
+        navigate(`/game/${data.id}`);
+      } else {
+        console.error('Failed to start new game:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error starting new game:', error);
+    }
+  };
 
-    const lobbyItems = [
-        { label: 'Start New Game', onClick: startNewGame },
-        { label: 'Ranking-Table', onClick: toggleRankingTable },
-        { label: 'My Profile', onClick: () => console.log('My Profile') },
-        { label: 'Log-Out', onClick: handleGoBack },
-        { label: 'Contact-us', onClick: toggleContactUs },
-    ];
+  const lobbyItems = [
+    { label: 'Start New Game', onClick: startNewGame },
+    { label: 'Ranking Table', onClick: () => navigate('/rankings') },
+    { label: 'My Profile', onClick: () => navigate('/profile') },
+    { label: 'Log Out', onClick: handleGoBack, ghost: true },
+    { label: 'Contact Us', onClick: () => navigate('/contact') },
+  ];
 
-    return (
-        <>
-        <div className="lobby-layout">
-            <div className={`ranking-table-sidebar ${showRankingTable ? 'show' : ''}`}>
-                <ActivePlayers />
-            </div>
-            <div className="lobby-container">
-                {lobbyItems.map((item, index) => (
-                    <LobbyItem key={index} label={item.label} onClick={item.onClick} />
-                ))}
-            </div>
-            {showContactUs && (
-                <div className={`contact-us-sidebar ${showContactUs ? 'show' : ''}`}>
-                    <ContactUs />
-                </div>
-            )}
-            </div>
-        </>
-        
-        
-    );
+  return (
+    <div>
+      <Header/>
+    <div className="lobby-container">
+      <h1 className="lobby-title">Lobby🎲</h1>
+      {lobbyItems.map((item, index) => (
+        <LobbyItem key={index} {...item} />
+      ))}
+    </div>
+    </div>
+  );
 };
 
 export default Lobby;

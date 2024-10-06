@@ -1,13 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
 body {
-    background-color: #005B33; /* צבע הרקע */
+    font-family: 'Montserrat', sans-serif;
+    background: #504f4f;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* גובה מלא של חלון */
+    height: 100vh;
     margin: 0;
 }
 
-/* סגנון חדש עבור lobby-layout */
+/* ֳ±ֳ¢ֳ°ֳ¥ֳ¯ ֳ§ֳ£ֳ¹ ֳ²ֳ¡ֳ¥ֳ¸ lobby-layout */
 .lobby-layout {
     position: relative;
     display: flex;
@@ -18,33 +21,55 @@ body {
 }
 
 .lobby-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
     border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    position: relative;
     overflow: hidden;
-    z-index: 1; /* וודא שזה מעל הרקע */
+    width: 600px;
+    max-width: 100%;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+}
+
+.lobby-title {
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+    z-index: 1; /* ֳ¥ֳ¥ֳ£ֳ  ֳ¹ֳ¦ֳ₪ ֳ®ֳ²ֳ¬ ֳ₪ֳ¸ֳ·ֳ² */
 }
 
 .lobby-item {
-    padding: 15px;
-    width: 100%; /* עדכון לרוחב מלא */
-    text-align: center;
-    color: black; /* טקסט שחור */
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 45px;
+    border: 1px solid #219144;
+    background-color: #219144;
+    color: #FFFFFF;
+    font-size: 12px;
     font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    margin: 10px 0;
     cursor: pointer;
-    transition: all 0.3s ease; /* מהירות המעבר */
-    margin: 10px 0; /* רווח בין האובייקטים */
-    border: none; /* ביטול גבול */
-    border-radius: 10px; /* עיגול הפינות */
-    font-size: 1.1em; /* גודל טקסט אחיד */
-    outline: none; /* הסרת קו מתאר */
+    border-radius: 20px;
 }
 
-    .lobby-item:nth-child(1) {
-        background-color: #D7C49E;
-    }
+.lobby-item:hover {
+    transform: scale(1.15);
+    background-color: #1a7436;
+}
+
+.lobby-item:active {
+    transform: scale(0.95);
+}
+
+    .lobby-item:nth-child(1) {background-color: #D7C49E;}
 
     .lobby-item:nth-child(2) {
         background-color: #BFAE8E;
@@ -62,13 +87,25 @@ body {
         background-color: #7B6B5D;
     }
 
-    .lobby-item:hover {
-        transform: scale(1.05); /* מעט הגדלה */
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-        background-color: rgba(255, 255, 255, 0.1); /* הוספת צבע רקע קל כאשר עובר עם העכבר */
+
+.lobby-item.ghost {
+    background-color: transparent;
+    border-color: black;
+    color: #1a7436;
+}
+
+
+
+@media (max-width: 768px) {
+    .lobby-container {
+        width: 90%;
+        min-height: auto;
+        padding: 20px;
     }
 
-/* סגנון חדש עבור ranking-table-sidebar */
+
+
+/*ranking-table-sidebar */
 .ranking-table-sidebar {
     position: fixed;
     top: 0;
@@ -90,8 +127,10 @@ body {
 
 @media (max-width: 600px) {
     .lobby-item {
-        font-size: 1.2em;
+        font-size: 14px;
+        padding: 10px 30px;
     }
+}
 
     .ranking-table-sidebar {
         width: 100%;
@@ -104,14 +143,14 @@ body {
     right: 0;
     width: 370px;
     height: 62%;
-    background-color: #8E7A6C; /* רקע לבן עם שקיפות */
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); /* הצללה כהה יותר */
+    background-color: #8E7A6C; 
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); 
     overflow-y: auto;
     z-index: 2;
     transition: transform 0.3s ease-in-out;
     transform: translateX(-100%);
     border-radius: 15px;
-    padding: 20px; /* רווח פנימי */
+    padding: 20px; 
 }
 
     .contact-us-sidebar.show {
@@ -119,12 +158,12 @@ body {
     }
 
 .contact-us-container h2 {
-    color: black; /* צבע כהה לכותרת */
-    margin-bottom: 15px; /* רווח בין הכותרת לתוכן */
+    color: black; 
+    margin-bottom: 15px; 
     justify-content: center;
     text-align: center;
-    border-bottom: 2px solid #1e2a6b; /* קו תחתון צבעוני */
-    padding-bottom: 10px; /* רווח בין הטקסט לקו */
+    border-bottom: 2px solid #1e2a6b; 
+    padding-bottom: 10px; 
 }
 
 .contact-us-form {
@@ -137,44 +176,41 @@ body {
 .contact-us-container textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px; /* רווח בין שדות */
-    border: 1px solid #ccc; /* גבול קל */
-    border-radius: 12px; /* פינות מעוגלות */
-    font-size: 16px; /* גודל טקסט */
-    color: #333; /* צבע טקסט */
-    background-color: rgba(255, 255, 255, 0.9); /* רקע לבן עם שקיפות */
+    margin-bottom: 15px; /* ֳ¸ֳ¥ֳ¥ֳ§ ֳ¡ֳ©ֳ¯ ֳ¹ֳ£ֳ¥ֳ÷ */
+    border: 1px solid #ccc; /* ֳ¢ֳ¡ֳ¥ֳ¬ ֳ·ֳ¬ */
+    border-radius: 12px; /* ֳ´ֳ©ֳ°ֳ¥ֳ÷ ֳ®ֳ²ֳ¥ֳ¢ֳ¬ֳ¥ֳ÷ */
+    font-size: 16px; /* ֳ¢ֳ¥ֳ£ֳ¬ ֳ¨ֳ·ֳ±ֳ¨ */
+    color: #333; /* ֳ¶ֳ¡ֳ² ֳ¨ֳ·ֳ±ֳ¨ */
+    background-color: rgba(255, 255, 255, 0.9); /* ֳ¸ֳ·ֳ² ֳ¬ֳ¡ֳ¯ ֳ²ֳ­ ֳ¹ֳ·ֳ©ֳ´ֳ¥ֳ÷ */
 }
 
 .contact-us-container button {
-    background-color: #1e2a6b; /* צבע רקע כהה */
-    color: #fff; /* צבע טקסט לבן */
-    padding: 10px 15px; /* רווח פנימי */
-    border: none; /* ללא גבול */
-    border-radius: 5px; /* פינות מעוגלות */
-    cursor: pointer; /* יד עם לחצן */
-    font-size: 16px; /* גודל טקסט */
-    transition: background-color 0.3s; /* מעבר חלק */
-    border-bottom: 2px solid #1e2a6b; /* קו תחתון צבעוני */
-    padding-bottom: 10px; /* רווח בין הטקסט לקו */
+    background-color: #1e2a6b; 
+    color: #fff; 
+    padding: 10px 15px; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer;
+    font-size: 16px; 
+    transition: background-color 0.3s;
+    border-bottom: 2px solid #1e2a6b;
+    padding-bottom: 10px; 
 }
 
     .contact-us-container button:hover {
-        background-color: #007B5F; /* צבע רקע כאשר מעבירים את העכבר */
+        background-color: #007B5F;
     }
 
 .contact-us-container p {
-    margin-top: 15px; /* רווח מעל הטקסט */
+    margin-top: 15px; 
     font-size: 18px;
-    color: black; /* צבע טקסט כהה יותר */
-    border-top: 2px solid #1e2a6b; /* קו תחתון צבעוני */
-    padding-top: 10px; /* רווח בין הטקסט לקו */
+    color: black; 
+    border-top: 2px solid #1e2a6b; 
+    padding-top: 10px; 
 }
 
 .contact-us-container a {
-    color: #141847; /* צבע לינק */
-    text-decoration: underline; /* קו תחתון */
+    color: #141847;
+    text-decoration: underline; 
 }
-
-
-
 

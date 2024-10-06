@@ -21,7 +21,8 @@ namespace BackgammonFinalProject.Server.Services
                     Id = m.Id,
                     Content = m.Content,
                     Timestamp = m.Timestamp,
-                    SenderId = m.Sender?.Id ?? 0
+                    SenderId = m.Sender?.Id ?? 0,
+                    SenderName = m.Sender!.Username
                 }).ToList() ?? new List<MessageDto>()
             };
         }
@@ -44,7 +45,7 @@ namespace BackgammonFinalProject.Server.Services
                 Content = message.Content,
                 Timestamp = message.Timestamp,
                 SenderId = message.Sender?.Id ?? 0,
-                
+                SenderName = message.Sender!.Username
             };
         }
     }
