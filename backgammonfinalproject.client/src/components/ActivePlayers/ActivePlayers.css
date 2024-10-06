@@ -1,0 +1,49 @@
+.player-list-container {
+    background-color: #1f2937;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-width: 20rem;
+}
+
+.player-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1rem;
+    background-color: #374151;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.crown-icon {
+    color: #fbbf24;
+    margin-right: 0.5rem;
+}
+
+.player-list-header h2 {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.player-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.player-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid #4b5563;
+}
+
+.player-name {
+    color: white;
+}
+
+.player-score {
+    color: #9ca3af;
+}

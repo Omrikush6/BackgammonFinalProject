@@ -5,6 +5,7 @@ import { UserContext } from '../../App';
 import Board from '../Board/Board';
 import './GameRoom.css';
 
+
 function GameRoom() {
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ function GameRoom() {
   }
 
   return (
-    <div className="game-room">
+      <div className="game-room">
       <div className="game-board">
         <Board game={game} />
       </div>
