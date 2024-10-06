@@ -15,38 +15,65 @@ function GameRoom() {
   const [error, setError] = useState(null);
   const connectionRef = useRef(null);
 
-  const setupSignalRConnection = async (token) => {
-    const connection = new HubConnectionBuilder()
-      .withUrl(`https://localhost:7027/gameHub?access_token=${token}`)
-      .configureLogging(LogLevel.Information)
-      .withAutomaticReconnect()
-      .build();
-    
-    connection.on("PlayerJoined", setGame);
-    connection.on("MessageReceived", (message) => {
-      setMessages(prevMessages => [...prevMessages, message]);
-    });
+  // Delay SignalR connection until the user is available
+  const setupSignalRConnection = useCallback(async () => {
+    if (!user || !user.id) return; // Make sure the user is fully loaded
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("No authentication token found.");
+      return;
+    }
 
     try {
+      const connection = new HubConnectionBuilder()
+        .withUrl(`https://localhost:7027/gameHub?access_token=${token}`)
+        .configureLogging(LogLevel.Information)
+        .withAutomaticReconnect()
+        .build();
+
+      connection.on("PlayerJoined", setGame);
+      connection.on("MessageReceived", (message) => {
+        setMessages(prevMessages => [...prevMessages, message]);
+      });
+
       await connection.start();
       console.log("SignalR Connected.");
-      
-      await connection.invoke("JoinGame", parseInt(gameId), 5);
+
+      await connection.invoke("JoinGame", parseInt(gameId), parseInt(user.id));
       connectionRef.current = connection;
     } catch (err) {
       console.error('SignalR Connection Error: ', err);
       setError(`Failed to connect to game: ${err.message}`);
     }
-  };
+  }, [user, gameId]);
+
+  // Set up SignalR connection when `user` changes
+  useEffect(() => {
+    if (user && user.id) {
+      setupSignalRConnection();
+    }
+
+    return () => {
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+      }
+    };
+  }, [setupSignalRConnection, user]);
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
-    const token = localStorage.getItem('token');
 
     const fetchGame = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("No authentication token found.");
+        return;
+      }
+
       try {
         const response = await fetch(`https://localhost:7027/api/game/${gameId}`, {
           headers: {
@@ -58,8 +85,7 @@ function GameRoom() {
         }
         const data = await response.json();
         setGame(data);
-        setMessages(data.messages)
-        await setupSignalRConnection(token);
+        setMessages(data.messages || []);
       } catch (error) {
         console.error('Error:', error);
         setError(error.message);
@@ -67,30 +93,25 @@ function GameRoom() {
     };
 
     fetchGame();
-
-    return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop();
-      }
-    };
-  }, [gameId, navigate, isLoggedIn, user]);
+  }, [gameId, navigate, isLoggedIn]);
 
   const sendMessage = async () => {
-    if (inputMessage.trim() !== '' && connectionRef.current) {
-      try {
-        await connectionRef.current.invoke("SendMessage", parseInt(gameId), 5, inputMessage);
-        setInputMessage('');
-      } catch (err) {
-        console.error('Error sending message: ', err);
-        setError(`Failed to send message: ${err.message}`);
-      }
+    if (inputMessage.trim() === '' || !connectionRef.current || !user) return;
+
+    try {
+      await connectionRef.current.invoke("SendMessage", parseInt(gameId), parseInt(user.id), inputMessage);
+      setInputMessage('');
+    } catch (err) {
+      console.error('Error sending message: ', err);
+      setError(`Failed to send message: ${err.message}`);
     }
   };
+
   if (error) {
     return <div className="error">{error}</div>;
   }
 
-  if (!game) {
+  if (!game || !user) {
     return <div>Loading...</div>;
   }
 

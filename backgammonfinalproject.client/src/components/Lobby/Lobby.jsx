@@ -1,6 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Lobby.css';
+import { UserContext } from '../../App';
+import { useContext } from 'react';
+import Header from '../Header/Header';
+
 
 const LobbyItem = ({ label, onClick, ghost }) => (
   <button className={`lobby-item ${ghost ? 'ghost' : ''}`} onClick={onClick}>
@@ -10,6 +14,7 @@ const LobbyItem = ({ label, onClick, ghost }) => (
 
 const Lobby = ({ onLogout }) => {
   const navigate = useNavigate();
+  const { user } = useContext(UserContext);
 
   const handleGoBack = () => {
     onLogout();
@@ -24,7 +29,7 @@ const Lobby = ({ onLogout }) => {
     }
 
     try {
-      const response = await fetch('https://localhost:7027/api/game/creategame', {
+      const response = await fetch('https://localhost:7027/api/Game/CreateGame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,11 +59,14 @@ const Lobby = ({ onLogout }) => {
   ];
 
   return (
+    <div>
+      <Header/>
     <div className="lobby-container">
       <h1 className="lobby-title">Lobby🎲</h1>
       {lobbyItems.map((item, index) => (
         <LobbyItem key={index} {...item} />
       ))}
+    </div>
     </div>
   );
 };

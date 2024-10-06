@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+.profile-container {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    position: relative;
+    overflow: hidden;
+    width: 600px;
+    max-width: 100%;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    margin: 50px auto;
+}
+
+.profile-title {
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.profile-description {
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+    max-width: 80%;
+}
+
+.profile-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    background-color: #eee;
+    border-radius: 20px;
+}
+
+.profile-item {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 45px;
+    border: 1px solid #219144;
+    background-color: #219144;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+.profile-item:hover {
+    transform: scale(1.05);
+    background-color: #1a7436;
+}
+
+.profile-item:active {
+    transform: scale(0.95);
+}
+
+.profile-item:focus {
+    outline: none;
+}
+
+.profile-item.ghost {
+    background-color: transparent;
+    border-color: #219144;
+    color: #219144;
+}
+
+.profile-item.ghost:hover {
+    background-color: rgba(33, 145, 68, 0.1);
+}
+
+.error-message {
+    color: #ff3860;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        width: 90%;
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .profile-item {
+        font-size: 14px;
+        padding: 10px 30px;
+    }
+}

@@ -5,6 +5,7 @@ import Login from './components/Login/Login';
 import Lobby from './components/Lobby/Lobby';
 import GameRoom from './components/GameRoom/GameRoom';
 import Footer from './components/Footer/Footer';
+import Profile from './components/Profile/Profile'
 import Contact from './components/Contact/Contact'
 import './App.css';
 
@@ -93,6 +94,7 @@ function App() {
         <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
         <Route path='/lobby' element={isLoggedIn ? <Lobby onLogout={logout} /> : <Navigate to='/' />} />
         <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
+        <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/" />} /> 
         <Route path="/contact" element={<Contact />} />
         <Route path='*' element={<Navigate to={isLoggedIn ? '/Lobby' : '/'} />} />
       </Routes>
