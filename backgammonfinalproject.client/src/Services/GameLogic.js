@@ -1,17 +1,14 @@
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import SignalRService from './SignalRService';
 
 class GameLogic {
     constructor() {
         this.resetGameState();
-        this.connection = null;
-        this.onGameStateChange = null;
-        this.onMessageReceived = null;
     }
 
     resetGameState() {
         this.gameState = {
             id: null,
-            points: Array(24).fill({ player: null, checkers: 0 }), // Changed to store player and checker count
+            points: Array(24).fill({ player: null, checkers: 0 }), 
             barWhite: 0,
             barBlack: 0,
             outsideBarWhite: 0,
@@ -19,31 +16,9 @@ class GameLogic {
             diceValues: [0, 0],
             currentTurn: null,
             players: [],
-            gameStatus: 'WaitingForPlayers', // Added game status
+            gameStatus: 'WaitingForPlayers', 
             messages: []
         };
-    }
-
-    async createGame() {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('https://localhost:7027/api/Game/CreateGame', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to create game');
-            }
-            const data = await response.json();
-            this.initializeGame(data);
-            return this.gameState;
-        } catch (error) {
-            console.error('Error creating game:', error);
-            throw error;
-        }
     }
 
     async joinGame(gameId, userId) {
@@ -62,7 +37,7 @@ class GameLogic {
             }
             const data = await response.json();
             this.initializeGame(data);
-            await this.setupSignalRConnection(gameId, userId);
+            await SignalRService.connect(token, gameId, userId);
             return this.gameState;
         } catch (error) {
             console.error('Error joining game:', error);
@@ -106,56 +81,6 @@ class GameLogic {
         return points;
     }
 
-    async setupSignalRConnection(gameId, userId) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error("No authentication token found.");
-        }
-
-        this.connection = new HubConnectionBuilder()
-            .withUrl(`https://localhost:7027/gameHub?access_token=${token}`)
-            .configureLogging(LogLevel.Information)
-            .withAutomaticReconnect()
-            .build();
-
-        this.connection.on("GameUpdated", (updatedGame) => {
-            this.gameState = this.initializeGame(updatedGame);
-            if (this.onGameStateChange) {
-                this.onGameStateChange(this.gameState);
-            }
-        });
-
-        this.connection.on("MessageReceived", (message) => {
-            if (this.onMessageReceived) {
-                this.onMessageReceived(message);
-            }
-        });
-
-        this.connection.on("PlayerJoined", (updatedGame) => {
-            console.log("PlayerJoined event received", updatedGame);
-            this.gameState = this.initializeGame(updatedGame);
-            if (this.onGameStateChange) {
-                this.onGameStateChange(this.gameState);
-            }
-        });
-
-        this.connection.on("JoinGameError", (errorMessage) => {
-            console.error("JoinGameError received", errorMessage);
-            if (this.onError) {
-                this.onError(errorMessage);
-            }
-        });
-
-        await this.connection.start();
-        console.log("SignalR Connected.");
-
-        await this.connection.invoke("JoinGame", parseInt(gameId), parseInt(userId));
-    }
-
-    setOnError(callback) {
-        this.onError = callback;
-    }
-
     rollDice() {
         const diceValues = [
             Math.floor(Math.random() * 6) + 1,
@@ -195,24 +120,7 @@ class GameLogic {
 
     async updateGameState() {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`https://localhost:7027/api/Game/UpdateGame/${this.gameState.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(this.getGameStateForUpdate())
-            });
-            if (!response.ok) {
-                throw new Error('Failed to update game state');
-            }
-            const data = await response.json();
-            this.gameState = this.initializeGame(data);
-            if (this.onGameStateChange) {
-                this.onGameStateChange(this.gameState);
-            }
-            return this.gameState;
+            await SignalRService.updateGameState(this.getGameStateForUpdate());
         } catch (error) {
             console.error('Error updating game state:', error);
             throw error;
@@ -228,27 +136,6 @@ class GameLogic {
         };
     }
 
-    setOnGameStateChange(callback) {
-        this.onGameStateChange = callback;
-    }
-
-    setOnMessageReceived(callback) {
-        this.onMessageReceived = callback;
-    }
-
-    async sendMessage(gameId, userId, message) {
-        if (!this.connection) {
-            throw new Error("SignalR connection not established");
-        }
-        await this.connection.invoke("SendMessage", parseInt(gameId), parseInt(userId), message);
-    }
-
-    disconnectSignalR() {
-        if (this.connection) {
-            return this.connection.stop();
-        }
-        return Promise.resolve();
-    }
 }
 
 export default new GameLogic();

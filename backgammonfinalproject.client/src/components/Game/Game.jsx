@@ -5,7 +5,6 @@ import './Game.css';
 
 const Game = ({ game, onGameStateChange }) => {
   const [diceValues, setDiceValues] = useState([0, 0]);
-  
 
 
   const rollDice = () => {

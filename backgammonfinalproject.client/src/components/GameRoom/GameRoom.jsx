@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import GameLogic from '../../Services/GameLogic';
+import SignalRService from '../../Services/SignalRService';
 import { UserContext } from '../../App';
 import Game from '../Game/Game';
 import Chat from '../Chat/Chat';
@@ -10,16 +11,7 @@ function GameRoom() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { user, isLoggedIn } = useContext(UserContext);
-  const [game, setGame] = useState({
-    points: Array(24).fill([]),
-    barWhite: 0,
-    barBlack: 0,
-    outsideBarWhite: 0,
-    outsideBarBlack: 0,
-    diceValues: [0, 0],
-    currentTurn: null,
-    players: []
-  });
+  const [game, setGame] = useState(GameLogic.gameState);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
 
@@ -37,33 +29,31 @@ function GameRoom() {
       try {
         await GameLogic.joinGame(gameId, user.id);
         if (isMounted) {
-          setGame(prevGame => ({
-            ...prevGame,
-            ...GameLogic.gameState,
-            players: [...(GameLogic.gameState.players || [])],
-            points: [...(GameLogic.gameState.points || Array(24).fill([]))]
-          }));
+          setGame({...GameLogic.gameState});
           setMessages(GameLogic.gameState.messages || []);
         }
 
-        GameLogic.setOnGameStateChange((updatedGame) => {
+        SignalRService.setOnGameUpdated((updatedGame) => {
           if (isMounted) {
-            setGame(prevGame => ({
-              ...prevGame,
-              ...updatedGame,
-              players: [...(updatedGame.players || [])],
-              points: [...(updatedGame.points || Array(24).fill([]))]
-            }));
+            GameLogic.initializeGame(updatedGame);
+            setGame({...GameLogic.gameState});
           }
         });
 
-        GameLogic.setOnMessageReceived((message) => {
+        SignalRService.setOnMessageReceived((message) => {
           if (isMounted) {
             setMessages(prevMessages => [...prevMessages, message]);
           }
         });
 
-        GameLogic.setOnError((errorMessage) => {
+        SignalRService.setOnPlayerJoined((updatedGame) => {
+          if (isMounted) {
+            GameLogic.initializeGame(updatedGame);
+            setGame({...GameLogic.gameState});
+          }
+        });
+
+        SignalRService.setOnError((errorMessage) => {
           if (isMounted) {
             setError(errorMessage);
           }
@@ -80,7 +70,7 @@ function GameRoom() {
 
     return () => {
       isMounted = false;
-      GameLogic.disconnectSignalR();
+      SignalRService.disconnect();
     };
   }, [gameId, navigate, isLoggedIn, user]);
 
@@ -92,9 +82,8 @@ function GameRoom() {
 
   const handleSendMessage = async (message) => {
     if (!user) return;
-
     try {
-      await GameLogic.sendMessage(gameId, user.id, message);
+      await SignalRService.sendMessage(gameId, user.id, message);
     } catch (err) {
       console.error('Error sending message: ', err);
       setError(`Failed to send message: ${err.message}`);
@@ -102,11 +91,8 @@ function GameRoom() {
   };
   const handleRollDice = async () => {
     try {
-      const diceValues = await GameLogic.rollDice(gameId, user.id);
-      setGame(prevGame => ({
-        ...prevGame,
-        diceValues
-      }));
+      const diceValues = GameLogic.rollDice();
+      setGame({...GameLogic.gameState});
     } catch (err) {
       console.error('Error rolling dice: ', err);
       setError(`Failed to roll dice: ${err.message}`);
