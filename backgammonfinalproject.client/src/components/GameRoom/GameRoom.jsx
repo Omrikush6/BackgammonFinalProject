@@ -136,7 +136,6 @@ function GameRoom() {
 
   return (
     <div className="game-room">
-      {/*render the game here*/}
       <Game 
         game={game} 
         onGameStateChange={handleGameStateChange}

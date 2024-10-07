@@ -96,13 +96,13 @@ class GameLogic {
     initializePoints() {
         const points = Array(24).fill({ player: null, checkers: 0 });
         points[0] = { player: 1, checkers: 2 };
+        points[5] = { player: 2, checkers: 5 };
+        points[7] = { player: 2, checkers: 3 };
         points[11] = { player: 1, checkers: 5 };
+        points[12] = { player: 2, checkers: 5 };
         points[16] = { player: 1, checkers: 3 };
         points[18] = { player: 1, checkers: 5 };
         points[23] = { player: 2, checkers: 2 };
-        points[12] = { player: 2, checkers: 5 };
-        points[7] = { player: 2, checkers: 3 };
-        points[5] = { player: 2, checkers: 5 };
         return points;
     }
 
@@ -156,7 +156,6 @@ class GameLogic {
         this.onError = callback;
     }
 
-    // UPDATED: Client-side dice rolling
     rollDice() {
         const diceValues = [
             Math.floor(Math.random() * 6) + 1,
