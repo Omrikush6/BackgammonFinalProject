@@ -1,20 +1,14 @@
-﻿using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories.Interfaces;
+﻿using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Models;
+using BackgammonFinalProject.Server.Repositories.Interfaces;
 using System.Text.Json;
 
-namespace BackgammonFinalProject.Services
+namespace BackgammonFinalProject.Server.Services
 {
-    public class GameService
+    public class GameService(IGameRepository gameRepository, IUserRepository userRepository)
     {
-        private readonly IGameRepository _gameRepository;
-        private readonly IUserRepository _userRepository;
-
-        public GameService(IGameRepository gameRepository, IUserRepository userRepository)
-        {
-            _gameRepository = gameRepository;
-            _userRepository = userRepository;
-        }
+        private readonly IGameRepository _gameRepository = gameRepository;
+        private readonly IUserRepository _userRepository = userRepository;
 
         public async Task<Game> CreateGameAsync(User player1)
         {
@@ -43,10 +37,16 @@ namespace BackgammonFinalProject.Services
             if (player == null)
                 return (false, "User not found.", null);
 
+            // Check if the player is already in the game
+            if (game.Players.Any(p => p.Id == userId))
+                return (true, "Player already in the game.", game);
+
+            // If the game is full, but the player is not in it, reject the join
             if (game.Players.Count >= 2)
                 return (false, "Game is full.", null);
 
             game.Players.Add(player);
+
             if (game.Players.Count == 2)
             {
                 game.GameState = GameState.ReadyToStart;
@@ -65,7 +65,7 @@ namespace BackgammonFinalProject.Services
                 return (false, "Game cannot start without two players.", null);
 
             game.GameState = GameState.InProgress;
-            game.CurrentTurn = game.Players[Random.Shared.Next(2)].Id;
+            game.CurrentTurn = game.Players.Select(p => p.Id).OrderBy(_ => Guid.NewGuid()).First();
             game.CurrentStateJson = GenerateInitialGameState();
             await _gameRepository.UpdateAsync(game);
             return (true, "Game started successfully.", game);
@@ -112,7 +112,7 @@ namespace BackgammonFinalProject.Services
             return (true, "Message added successfully.", message);
         }
 
-        private string GenerateInitialGameState()
+        private static string GenerateInitialGameState()
         {
             //THIS WILL BE UPDATED TO MACTH THE GAME
             // This method should return a JSON string representing the initial game state

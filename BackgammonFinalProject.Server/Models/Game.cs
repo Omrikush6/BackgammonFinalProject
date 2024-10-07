@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BackgammonFinalProject.Models
+namespace BackgammonFinalProject.Server.Models
 {
     public class Game
     {
@@ -17,7 +17,7 @@ namespace BackgammonFinalProject.Models
 
         public DateTime? EndTime { get; set; }
 
-        public List<User> Players { get; set; } = [];
+        public HashSet<User> Players { get; set; } = [];
 
         public List<Message> Messages { get; set; } = [];
         public string? CurrentStateJson { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace BackgammonFinalProject.Models
+﻿namespace BackgammonFinalProject.Server.Models
 {
     public enum GameState
     {

@@ -1,30 +1,22 @@
-﻿using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories.Interfaces;
+﻿using BackgammonFinalProject.Server.Models;
+using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Repositories.Interfaces;
 using BackgammonFinalProject.Server.Services;
-using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace BackgammonFinalProj.Controllers
+namespace BackgammonFinalProject.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IUserRepository userRepository, HashingService hashingservice, MappingService mappingservice) : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly HashingService _hashingService;
-        private readonly MappingService _mappingService;
-
-        public UserController(IUserRepository userRepository, HashingService hashingservice, MappingService mappingservice)
-        {
-            _userRepository = userRepository;
-            _hashingService = hashingservice;
-            _mappingService = mappingservice;
-        }
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly HashingService _hashingService = hashingservice;
+        private readonly MappingService _mappingService = mappingservice;
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)

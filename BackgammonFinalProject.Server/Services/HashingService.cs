@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace BackgammonFinalProject.Services
+namespace BackgammonFinalProject.Server.Services
 {
     public class HashingService
     {
@@ -23,15 +23,13 @@ namespace BackgammonFinalProject.Services
             var salt = parts[0];
             var storedPasswordHash = parts[1];
 
-            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(salt)))
-            {
-                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                var hashedInputPassword = Convert.ToBase64String(hash);
-                return hashedInputPassword == storedPasswordHash;
-            }
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(salt));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            var hashedInputPassword = Convert.ToBase64String(hash);
+            return hashedInputPassword == storedPasswordHash;
         }
 
-        private string GenerateSalt()
+        private static string GenerateSalt()
         {
             byte[] saltBytes = new byte[16];
             using (var rng = RandomNumberGenerator.Create())

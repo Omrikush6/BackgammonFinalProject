@@ -1,7 +1,7 @@
-﻿using BackgammonFinalProject.Models;
+﻿using BackgammonFinalProject.Server.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace BackgammonFinalProject.DTOs
+namespace BackgammonFinalProject.Server.DTOs
 {
     public class GameDto
     {
@@ -17,9 +17,9 @@ namespace BackgammonFinalProject.DTOs
 
         public DateTime? EndTime { get; set; }
 
-        public List<int> PlayerIds { get; set; } = new List<int>();
+        public HashSet<int> PlayerIds { get; set; } = [];
 
-        public List<MessageDto> Messages { get; set; } = new List<MessageDto>();
+        public List<MessageDto> Messages { get; set; } = [];
         public string? CurrentStateJson { get; set; }
     }
 }

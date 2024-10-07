@@ -1,25 +1,18 @@
-﻿using BackgammonFinalProject.Controllers;
-using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Models;
+﻿using BackgammonFinalProject.Server.Controllers;
+using BackgammonFinalProject.Server.Models;
+using BackgammonFinalProject.Server.DTOs;
 using BackgammonFinalProject.Server.Services;
-using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BackgammonFinalProject.Hubs
+namespace BackgammonFinalProject.Server.Hubs
 {
-    public class GameHub : Hub
+    public class GameHub(GameService gameService, MappingService mappingService) : Hub
     {
-        private readonly GameService _gameService;
-        private readonly MappingService _mappingService;
-
-        public GameHub(GameService gameService, MappingService mappingService)
-        {
-            _gameService = gameService;
-            _mappingService = mappingService;
-        }
+        private readonly GameService _gameService = gameService;
+        private readonly MappingService _mappingService = mappingService;
 
         public async Task JoinGame(int gameId, int userId)
         {
@@ -33,12 +26,12 @@ namespace BackgammonFinalProject.Hubs
                 }
                 else
                 {
-                    throw new HubException(result.Message);
+                    await Clients.Caller.SendAsync("JoinGameError", result.Message);
                 }
             }
             catch (Exception ex)
             {
-                throw new HubException($"An error occurred while joining the game: {ex.Message}");
+                await Clients.Caller.SendAsync("JoinGameError", $"An error occurred while joining the game: {ex.Message}");
             }
         }
 

@@ -1,18 +1,17 @@
-using BackgammonFinalProject.Data;
-using BackgammonFinalProject.Repositories.Interfaces;
-using BackgammonFinalProject.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BackgammonFinalProject.Services;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using BackgammonFinalProject.Hubs;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using BackgammonFinalProject.Server.Services;
+using BackgammonFinalProject.Server.Data;
+using BackgammonFinalProject.Server.Hubs;
+using BackgammonFinalProject.Server.Repositories;
+using BackgammonFinalProject.Server.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BackgammonDbContext>(options =>
@@ -85,7 +84,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });

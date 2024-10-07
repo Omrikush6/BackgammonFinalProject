@@ -4,30 +4,23 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories;
+using BackgammonFinalProject.Server.Repositories;
 using System.Security.Cryptography;
-using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Repositories.Interfaces;
 using System.Text.RegularExpressions;
-using BackgammonFinalProject.Services;
+using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Models;
+using BackgammonFinalProject.Server.Repositories.Interfaces;
+using BackgammonFinalProject.Server.Services;
 
-namespace BackgammonFinalProject.Controllers
+namespace BackgammonFinalProject.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IUserRepository userRepository, IConfiguration configuration, HashingService hashingService) : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
-        private readonly  HashingService _hashingService;
-
-        public AuthController(IUserRepository userRepository, IConfiguration configuration, HashingService hashingService)
-        {
-            _userRepository = userRepository;
-            _configuration = configuration;
-            _hashingService = hashingService;
-        }
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly HashingService _hashingService = hashingService;
 
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp(UserDto userDto)

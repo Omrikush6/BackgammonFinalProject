@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace BackgammonFinalProject.Models
+namespace BackgammonFinalProject.Server.Models
 {
     public class User
     {

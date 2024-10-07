@@ -1,0 +1,9 @@
+.bar {
+    width: 80px;
+    height: 100%;
+    background-color: #8B4513;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  

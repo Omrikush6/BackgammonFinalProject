@@ -1,13 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using BackgammonFinalProject.Models;
+using BackgammonFinalProject.Server.Models;
 
-namespace BackgammonFinalProject.Data
+namespace BackgammonFinalProject.Server.Data
 {
-    public class BackgammonDbContext : DbContext
+    public class BackgammonDbContext(DbContextOptions<BackgammonDbContext> options) : DbContext(options)
     {
-        public BackgammonDbContext(DbContextOptions<BackgammonDbContext> options): base(options)
-        {
-        }
         public DbSet<User> Users { get; set; }
         public DbSet<Game> Games { get; set; }
 
