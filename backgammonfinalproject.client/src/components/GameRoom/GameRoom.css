@@ -1,6 +1,6 @@
 .game-room {
-  display: block;
-  height: 100vh;
+  display: flex;
+  height: 100%;
 }
 
 .game-board {
