@@ -5,7 +5,6 @@ import './Game.css';
 
 
 const Game = ({ game, onGameStateChange, onRollDice , onMove }) => {
-debugger;
   return (
     <div className="game">
       <GameBoard game={game} onMove={onMove} onGameStateChange={onGameStateChange} />

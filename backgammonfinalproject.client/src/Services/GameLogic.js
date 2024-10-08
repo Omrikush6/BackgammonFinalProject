@@ -3,6 +3,15 @@ import SignalRService from './SignalRService';
 class GameLogic {
     constructor() {
         this.resetGameState();
+        this.selectedChecker = null;
+    }
+
+    selectChecker(pointIndex) {
+        if (this.gameState.points[pointIndex].checkers > 0) {
+            this.selectedChecker = pointIndex;
+            return true;
+        }
+        return false;
     }
 
     resetGameState() {
@@ -54,7 +63,6 @@ class GameLogic {
             console.error('Game data is undefined');
             return this.gameState;
         }
-        debugger;
 
         this.gameState = {
             id: gameData.id,
@@ -120,24 +128,31 @@ class GameLogic {
         return true;
     }
 
-    moveChecker(from, to) {
-        if (this.isValidMove(from, to)) {
-            const fromPoint = this.gameState.points[from];
-            const toPoint = this.gameState.points[to];
-            
-            fromPoint.checkers--;
-            if (fromPoint.checkers === 0) fromPoint.player = null;
-            
-            toPoint.checkers++;
-            toPoint.player = fromPoint.player;
-
-            this.updateGameState();
-            return true;
-        }
-        return false;
-    }
+    moveChecker(fromIndex, toIndex) {
+        if (this.isValidMove(fromIndex, toIndex)) {
+            const fromPoint = this.gameState.points[fromIndex];
+            const toPoint = this.gameState.points[toIndex];
     
-    async updateGameState() {
+            this.gameState.points[fromIndex] = {
+                ...fromPoint,
+                checkers: fromPoint.checkers - 1,
+                player: fromPoint.checkers === 1 ? null : fromPoint.player
+            };
+            this.gameState.points[toIndex] = {
+                ...toPoint,
+                checkers: toPoint.checkers + 1,
+                player: fromPoint.player
+            };
+    
+            console.log(`Moved checker from ${fromIndex} to ${toIndex}`);
+            this.updateGameState();
+
+            return true;
+        } else {
+            console.error('Invalid move');
+            return false;
+        }
+    }    async updateGameState() {
         try {
             const gamestate = this.getGameStateForUpdate();
             console.log('Updating game state:', gamestate);

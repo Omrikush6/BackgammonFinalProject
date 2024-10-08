@@ -13,6 +13,7 @@ namespace BackgammonFinalProject.Server.Services
                 Id = game.Id,
                 GameStatus = game.GameStatus,
                 CurrentTurn = game.CurrentTurn,
+                WinnerId = game.WinnerId,
                 StartTime = game.StartTime,
                 EndTime = game.EndTime,
                 PlayerIds = game.Players?.Select(p => p.Id).ToHashSet() ?? [],
@@ -23,18 +24,21 @@ namespace BackgammonFinalProject.Server.Services
                     Timestamp = m.Timestamp,
                     SenderId = m.Sender?.Id ?? 0,
                     SenderName = m.Sender!.Username
-                }).ToList() ?? []
+                }).ToList() ?? [],
+                CurrentStateJson = game.CurrentStateJson
+                
             };
         }
 
         public UserDto MapUserToDto(User user)
         {
-            return new UserDto{
+            return new UserDto
+            {
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                CreatedAt = user.CreatedAt
-
+                CreatedAt = user.CreatedAt,
+                GameIds = user.Games.Select(game => game.Id).ToList()
             };
         }
         public MessageDto MapMessageToDto(Message message)

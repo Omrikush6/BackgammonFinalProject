@@ -75,10 +75,11 @@ function GameRoom() {
   }, [gameId, navigate, isLoggedIn, user]);
 
   const handleGameStateChange = (newGameState) => {
-    setGame(newGameState);
+    //setGame(newGameState);
     // Here you might want to send the updated game state to the server
-    // GameLogic.updateGameState(newGameState);
+    //GameLogic.updateGameState(newGameState);
   };
+
 
   const handleSendMessage = async (message) => {
     if (!user) return;
@@ -89,13 +90,11 @@ function GameRoom() {
       setError(`Failed to send message: ${err.message}`);
     }
   };
+
   const handleRollDice = () => {
     try {
       let dice = GameLogic.rollDice();
-      setGame(prevGame => ({
-        ...prevGame,
-        diceValues: dice
-      }));
+      setGame(prevGame => ({...prevGame,diceValues: dice}));
     } catch (err) {
       console.error('Error rolling dice: ', err);
       setError(`Failed to roll dice: ${err.message}`);
@@ -104,7 +103,8 @@ function GameRoom() {
 
   const handleMove = async (from, to) => {
     try {
-      const updatedGame = await GameLogic.moveChecker(gameId, user.id, from, to);
+      debugger;
+      const updatedGame = await GameLogic.moveChecker(from, to);
       setGame(prevGame => ({
         ...prevGame,
         ...updatedGame
