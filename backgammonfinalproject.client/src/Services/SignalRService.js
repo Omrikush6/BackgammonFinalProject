@@ -55,8 +55,8 @@ class SignalRService {
     async updateGameState(gameState) {
         if (!this.connection) {
             throw new Error("SignalR connection not established");
-        }
-        await this.connection.invoke("UpdateGame", gameState);
+        }   
+        await this.connection.invoke("UpdateGame",parseInt(gameState.id), gameState);
     }
 
     setOnGameUpdated(callback) {

@@ -89,10 +89,13 @@ function GameRoom() {
       setError(`Failed to send message: ${err.message}`);
     }
   };
-  const handleRollDice = async () => {
+  const handleRollDice = () => {
     try {
-      const diceValues = GameLogic.rollDice();
-      setGame({...GameLogic.gameState});
+      let dice = GameLogic.rollDice();
+      setGame(prevGame => ({
+        ...prevGame,
+        diceValues: dice
+      }));
     } catch (err) {
       console.error('Error rolling dice: ', err);
       setError(`Failed to roll dice: ${err.message}`);

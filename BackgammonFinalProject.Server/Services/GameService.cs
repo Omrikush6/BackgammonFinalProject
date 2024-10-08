@@ -16,7 +16,7 @@ namespace BackgammonFinalProject.Server.Services
             {
                 StartTime = DateTime.UtcNow,
                 Players = [player1],
-                GameState = GameState.WaitingForPlayers,
+                GameStatus = GameStatus.WaitingForPlayers,
                 CurrentTurn = player1.Id
             };
             await _gameRepository.CreateAsync(newGame);
@@ -49,7 +49,7 @@ namespace BackgammonFinalProject.Server.Services
 
             if (game.Players.Count == 2)
             {
-                game.GameState = GameState.ReadyToStart;
+                game.GameStatus = GameStatus.ReadyToStart;
             }
 
             await _gameRepository.UpdateAsync(game);
@@ -64,7 +64,7 @@ namespace BackgammonFinalProject.Server.Services
             if (game.Players.Count != 2)
                 return (false, "Game cannot start without two players.", null);
 
-            game.GameState = GameState.InProgress;
+            game.GameStatus = GameStatus.InProgress;
             game.CurrentTurn = game.Players.Select(p => p.Id).OrderBy(_ => Guid.NewGuid()).First();
             game.CurrentStateJson = GenerateInitialGameState();
             await _gameRepository.UpdateAsync(game);
@@ -79,9 +79,9 @@ namespace BackgammonFinalProject.Server.Services
 
             game.CurrentTurn = gameDto.CurrentTurn;
             game.CurrentStateJson = gameDto.CurrentStateJson;
-            game.GameState = gameDto.GameState;
+            game.GameStatus = gameDto.GameStatus;
 
-            if (gameDto.GameState == GameState.Completed)
+            if (gameDto.GameStatus == GameStatus.Completed)
             {
                 game.WinnerId = (int)gameDto.WinnerId!;
                 game.EndTime = DateTime.UtcNow;

@@ -6,7 +6,7 @@ namespace BackgammonFinalProject.Server.DTOs
     {
         public int CurrentTurn { get; set; }
         public required string CurrentStateJson { get; set; }
-        public GameState GameState { get; set; }
+        public GameStatus GameState { get; set; }
         public int? WinnerId { get; set; }
     }
 }

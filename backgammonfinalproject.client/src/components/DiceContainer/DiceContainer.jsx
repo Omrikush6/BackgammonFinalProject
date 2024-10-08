@@ -2,6 +2,7 @@ import React from 'react';
 import './DiceContainer.css';
 
 const DiceContainer = ({ diceValues, onRollDice }) => {
+  debugger;
   return (
     <div className="dice-container">
       <div className="dice">{diceValues[0]}</div>

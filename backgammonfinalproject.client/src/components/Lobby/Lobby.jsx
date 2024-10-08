@@ -38,7 +38,6 @@ const Lobby = ({ onLogout }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({})
       });
 
       if (response.ok) {

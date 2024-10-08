@@ -11,7 +11,7 @@ namespace BackgammonFinalProject.Server.Services
             return new GameDto
             {
                 Id = game.Id,
-                GameState = game.GameState,
+                GameStatus = game.GameStatus,
                 CurrentTurn = game.CurrentTurn,
                 StartTime = game.StartTime,
                 EndTime = game.EndTime,

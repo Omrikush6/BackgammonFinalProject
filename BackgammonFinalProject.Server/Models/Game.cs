@@ -7,7 +7,7 @@ namespace BackgammonFinalProject.Server.Models
         public int Id { get; set; }
 
         [Required]
-        public GameState GameState { get; set; } = GameState.WaitingForPlayers;
+        public GameStatus GameStatus { get; set; } = GameStatus.WaitingForPlayers;
 
         public int CurrentTurn { get; set; }
 

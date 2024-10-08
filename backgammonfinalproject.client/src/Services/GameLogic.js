@@ -8,16 +8,20 @@ class GameLogic {
     resetGameState() {
         this.gameState = {
             id: null,
-            points: Array(24).fill({ player: null, checkers: 0 }), 
+            gameStatus: 0, // WaitingForPlayers
+            currentTurn: null,
+            winnerId: null,
+            startTime: new Date().toISOString(),
+            endTime: null,
+            playerIds: [],
+            messages: [],
+            points: Array(24).fill({ player: null, checkers: 0 }),
             barWhite: 0,
             barBlack: 0,
             outsideBarWhite: 0,
             outsideBarBlack: 0,
             diceValues: [0, 0],
-            currentTurn: null,
-            players: [],
-            gameStatus: 'WaitingForPlayers', 
-            messages: []
+            isRolled: false
         };
     }
 
@@ -33,7 +37,7 @@ class GameLogic {
                 body: JSON.stringify({ userId })
             });
             if (!response.ok) {
-                throw new Error('Failed to join game' + ' ' + await response.text());
+                throw new Error('Failed to join game: ' + await response.text());
             }
             const data = await response.json();
             this.initializeGame(data);
@@ -50,25 +54,35 @@ class GameLogic {
             console.error('Game data is undefined');
             return this.gameState;
         }
+        debugger;
 
         this.gameState = {
-            ...this.gameState,
-            id: gameData.id || null,
-            gameStatus: gameData.gameState || 'WaitingForPlayers',
-            currentTurn: gameData.currentTurn || null,
-            diceValues: gameData.dice || [0, 0],
+            id: gameData.id,
+            gameStatus: gameData.gameStatus,
+            currentTurn: gameData.currentTurn,
+            winnerId: gameData.winnerId,
+            startTime: gameData.startTime,
+            endTime: gameData.endTime,
+            playerIds: gameData.playerIds || [],
+            messages: gameData.messages || [],
             points: gameData.points || this.initializePoints(),
             barWhite: gameData.grayBar?.checkersP1 || 0,
             barBlack: gameData.grayBar?.checkersP2 || 0,
             outsideBarWhite: gameData.outSideBar?.checkersP1 || 0,
             outsideBarBlack: gameData.outSideBar?.checkersP2 || 0,
-            players: gameData.players || [],
-            messages: gameData.messages || []
+            diceValues: gameData.diceValues || [0, 0],
+            isRolled: gameData.isRolled || false
         };
+
+        if (gameData.currentStateJson) {
+            const additionalState = JSON.parse(gameData.currentStateJson);
+            Object.assign(this.gameState, additionalState);
+        }
+
         return this.gameState;
     }
 
-    initializePoints() {
+    initializePoints() {    
         const points = Array(24).fill({ player: null, checkers: 0 });
         points[0] = { player: 1, checkers: 2 };
         points[5] = { player: 2, checkers: 5 };
@@ -80,6 +94,15 @@ class GameLogic {
         points[23] = { player: 2, checkers: 2 };
         return points;
     }
+    
+    async startGame() {
+        try {
+            await SignalRService.startGame();
+        } catch (error) {
+            console.error('Error starting game:', error);
+            throw error;
+        }
+    }
 
     rollDice() {
         const diceValues = [
@@ -87,22 +110,18 @@ class GameLogic {
             Math.floor(Math.random() * 6) + 1
         ];
         this.gameState.diceValues = diceValues;
+        this.gameState.isRolled = true;
         this.updateGameState();
         return diceValues;
     }
 
-    // UPDATED: Client-side move validation
     isValidMove(from, to) {
         // Implement move validation logic here
-        // This is a placeholder and should be replaced with actual game rules
         return true;
     }
 
-    // UPDATED: Client-side move execution
     moveChecker(from, to) {
         if (this.isValidMove(from, to)) {
-            // Update the game state
-            // This is a simplified version and should be expanded based on game rules
             const fromPoint = this.gameState.points[from];
             const toPoint = this.gameState.points[to];
             
@@ -117,10 +136,12 @@ class GameLogic {
         }
         return false;
     }
-
+    
     async updateGameState() {
         try {
-            await SignalRService.updateGameState(this.getGameStateForUpdate());
+            const gamestate = this.getGameStateForUpdate();
+            console.log('Updating game state:', gamestate);
+            await SignalRService.updateGameState(gamestate);
         } catch (error) {
             console.error('Error updating game state:', error);
             throw error;
@@ -130,12 +151,52 @@ class GameLogic {
     getGameStateForUpdate() {
         return {
             id: this.gameState.id,
+            gameStatus: this.gameState.gameStatus,
             currentTurn: this.gameState.currentTurn,
-            gameState: this.gameState.gameStatus,
-            currentStateJson: JSON.stringify(this.gameState)
+            winnerId: this.gameState.winnerId,
+            startTime: this.gameState.startTime,
+            endTime: this.gameState.endTime,
+            playerIds: this.gameState.playerIds,
+            messages: this.gameState.messages.map(message => ({
+                id: message.id,
+                content: message.content,
+                timestamp: message.timestamp,
+                senderId: message.senderId,
+                senderName: message.senderName
+            })),
+            currentStateJson: JSON.stringify({
+                points: this.gameState.points,
+                barWhite: this.gameState.barWhite,
+                barBlack: this.gameState.barBlack,
+                outsideBarWhite: this.gameState.outsideBarWhite,
+                outsideBarBlack: this.gameState.outsideBarBlack,
+                diceValues: this.gameState.diceValues,
+                isRolled: this.gameState.isRolled
+            })
         };
     }
 
+    mapGameStateToEnum(gameStatus) {
+        const stateMap = {
+            'WaitingForPlayers': 0,
+            'ReadyToStart': 1,
+            'InProgress': 2,
+            'Completed': 3,
+            'Abandoned': 4
+        };
+        return stateMap[gameStatus] || 0;
+    }
+
+    mapGameStatusFromEnum(gameStateEnum) {
+        const stateMap = {
+            0: 'WaitingForPlayers',
+            1: 'ReadyToStart',
+            2: 'InProgress',
+            3: 'Completed',
+            4: 'Abandoned'
+        };
+        return stateMap[gameStateEnum] || 'WaitingForPlayers';
+    }
 }
 
 export default new GameLogic();
