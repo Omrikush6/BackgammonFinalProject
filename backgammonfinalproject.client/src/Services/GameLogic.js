@@ -161,7 +161,6 @@ class GameLogic {
     moveChecker(from, to) {
         const isFromBar = from === 'barWhite' || from === 'barBlack';
         const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
-        debugger;
         
         if (this.isValidMove(from, to)) {
             const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;

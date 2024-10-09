@@ -54,11 +54,12 @@ const Lobby = ({ }) => {
 
   const lobbyItems = [
     { label: 'Start New Game', onClick: startNewGame },
+    { label: 'Join Game Room', onClick: () => navigate('/join') },
     { label: 'Ranking Table', onClick: () => navigate('/rankings') },
     { label: 'My Profile', onClick: () => navigate('/profile') },
     { label: 'Log Out', onClick: handleGoBack, ghost: true },
     { label: 'Contact Us', onClick: () => navigate('/contact') },
-    { label: 'Join Game Room', onClick: () => navigate('/join') },
+
   ];
 
   return (
