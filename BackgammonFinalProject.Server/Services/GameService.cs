@@ -66,7 +66,7 @@ namespace BackgammonFinalProject.Server.Services
 
             game.GameStatus = GameStatus.InProgress;
             game.CurrentTurn = game.Players.Select(p => p.Id).OrderBy(_ => Guid.NewGuid()).First();
-            game.CurrentStateJson = GenerateInitialGameState();
+            //game.CurrentStateJson = GenerateInitialGameState();
             await _gameRepository.UpdateAsync(game);
             return (true, "Game started successfully.", game);
         }

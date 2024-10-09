@@ -2,18 +2,22 @@ import React from 'react';
 import Checker from '../Checker/Checker';
 import './Bar.css';
 
-const Bar = ({ whitePieces, blackPieces }) => {
-  // Ensure at least 1 checker is shown for each color
-  debugger
+const Bar = ({ whitePieces, blackPieces, onBarClick, selectedBar }) => {
   return (
     <div className="bar">
-      <div className="bar-section top">
+      <div 
+        className={`bar-section top ${selectedBar === 'barBlack' ? 'selected' : ''}`}
+        onClick={() => onBarClick('black')}
+      >
         {Array.from({ length: Math.min(blackPieces, 5) }, (_, i) => (
           <Checker key={i} color="black" />
         ))}
         {blackPieces > 5 && <div className="checker-count">{blackPieces}</div>}
       </div>
-      <div className="bar-section bottom">
+      <div 
+        className={`bar-section bottom ${selectedBar === 'barWhite' ? 'selected' : ''}`}
+        onClick={() => onBarClick('white')}
+      >
         {Array.from({ length: Math.min(whitePieces, 5) }, (_, i) => (
           <Checker key={i} color="white" />
         ))}

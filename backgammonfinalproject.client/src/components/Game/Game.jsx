@@ -4,10 +4,10 @@ import DiceContainer from '../DiceContainer/DiceContainer';
 import './Game.css';
 
 
-const Game = ({ game, onGameStateChange, onRollDice , onMove }) => {
+const Game = ({ game, onRollDice , onMove }) => {
   return (
     <div className="game">
-      <GameBoard game={game} onMove={onMove} onGameStateChange={onGameStateChange} />
+      <GameBoard game={game} onMove={onMove} />
       <DiceContainer diceValues={game.diceValues} onRollDice={onRollDice} />
     </div>
   );

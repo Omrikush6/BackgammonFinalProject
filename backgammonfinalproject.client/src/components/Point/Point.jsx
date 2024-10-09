@@ -14,7 +14,7 @@ return (
       <div className="triangle"/>
       <div className="checkers">
         {checkers.checkers > 0 && Array.from({ length: Math.min(checkers.checkers, 5) }, (_, i) => (
-          <Checker key={i} color={checkers.player === 1 ? 'white' : 'black'} />
+          <Checker key={i} color={checkers.player} />
         ))}
         {checkers.checkers > 5 && (
           <div className="checker-count">{checkers.checkers}</div>

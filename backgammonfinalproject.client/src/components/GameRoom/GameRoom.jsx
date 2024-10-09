@@ -18,7 +18,7 @@ function GameRoom() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate('/');
     }
   }, [isLoggedIn, navigate]);
 
@@ -71,7 +71,6 @@ function GameRoom() {
   };
 
 
-
   const handleSendMessage = async (message) => {
     if (!user) return;
     try {
@@ -111,6 +110,7 @@ function GameRoom() {
         game={game} 
         onRollDice={handleRollDice}
         onMove={handleMove}
+        onError={handleError}
       />
       <Chat messages={messages} onSendMessage={handleSendMessage} user={user} />
     </div>

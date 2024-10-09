@@ -16,7 +16,7 @@ const LobbyItem = ({ label, onClick, ghost }) => (
 
 const Lobby = ({ onLogout }) => {
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+
 
   const handleGoBack = () => {
     onLogout();
