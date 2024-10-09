@@ -11,13 +11,14 @@ const GameBoard = ({ game, onMove, }) => {
   const [selectedBar, setSelectedBar] = useState(null);
 
   const handlePointClick = (index) => {
+    console.log(index);
     
     if (selectedBar !== null) {
       // If a bar is selected, attempt to move from bar to point
       onMove(selectedBar, index);
-      //alert(`attempted to move checker from bar to point ${index}`);
+      console.log(`attempted to move checker from bar to point ${index}`);
       setSelectedBar(null);
-    } else if (selectedPoint === null) {
+    } else if (selectedPoint === null && typeof(index)==='number') {
       // If no point is selected and this point has checkers, select it
       if (game.points[index].checkers > 0) {
         setSelectedPoint(index);
@@ -25,7 +26,7 @@ const GameBoard = ({ game, onMove, }) => {
     } else if (selectedPoint === index) {
       // If clicking the same point, deselect it
       setSelectedPoint(null);
-    } else {
+    } else if (selectedPoint !== null) {
       // If a different point was already selected, attempt to move
       onMove(selectedPoint, index);
       setSelectedPoint(null);
@@ -71,7 +72,7 @@ const GameBoard = ({ game, onMove, }) => {
     <div className="game-board">
       <OutsideBar 
       player="white" 
-      checkers={game?.outsideBarWhite ?? 0}
+      checkers={game?.outsideBarWhite ?? 1}
       onClick={() => handlePointClick('outsideWhite')} />
       <div className="board-left">
         <div className="board-quadrant top-left">{renderPoints(12, 17)}</div>
@@ -86,7 +87,7 @@ const GameBoard = ({ game, onMove, }) => {
         <div className="board-quadrant bottom-right">{renderPoints(5, 0)}</div>
       </div>
       <OutsideBar player="black"
-      checkers={game?.outsideBarBlack ?? 0} 
+      checkers={game?.outsideBarBlack ?? 1} 
       onClick={() => handlePointClick('outsideBlack')} />
     </div>
   );

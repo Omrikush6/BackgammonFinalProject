@@ -14,12 +14,12 @@ const LobbyItem = ({ label, onClick, ghost }) => (
   </button>
 );
 
-const Lobby = ({ onLogout }) => {
+const Lobby = ({ }) => {
+  const { logout } = useContext(UserContext);
   const navigate = useNavigate();
 
-
   const handleGoBack = () => {
-    onLogout();
+    logout();
     navigate('/');
   };
   

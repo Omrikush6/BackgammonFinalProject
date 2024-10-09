@@ -160,7 +160,8 @@ class GameLogic {
 
     moveChecker(from, to) {
         const isFromBar = from === 'barWhite' || from === 'barBlack';
-        const isToBar = to === 'barWhite' || to === 'barBlack';
+        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
+        debugger;
         
         if (this.isValidMove(from, to)) {
             const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
@@ -177,6 +178,9 @@ class GameLogic {
             // Moving between points on the board
             else if (typeof from === 'number' && typeof to === 'number') {
                 return this.moveBetweenPoints(from, to, movingColor);
+            }
+            else if (typeof from === 'number' && isBearingOff) {
+                return this.bearOff(from, to, movingColor);
             }
         } else {
             console.error('Invalid move');
@@ -261,6 +265,12 @@ class GameLogic {
     
         console.error('Invalid move between board points.');
         return false;
+    }
+
+
+    bearOff(from, to, movingColor) {
+        // Implement bearing off logic here
+        // Remember to check if all checkers are in the home board before allowing bearing off
     }
         
     getCurrentPlayer() {
