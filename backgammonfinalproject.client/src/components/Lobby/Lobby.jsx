@@ -58,6 +58,7 @@ const Lobby = ({ }) => {
     { label: 'My Profile', onClick: () => navigate('/profile') },
     { label: 'Log Out', onClick: handleGoBack, ghost: true },
     { label: 'Contact Us', onClick: () => navigate('/contact') },
+    { label: 'Join Game Room', onClick: () => navigate('/join') },
   ];
 
   return (

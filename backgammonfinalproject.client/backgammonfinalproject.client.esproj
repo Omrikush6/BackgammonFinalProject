@@ -11,6 +11,7 @@
   <ItemGroup>
     <Folder Include="src\components\ActivePlayers\" />
     <Folder Include="src\components\Chat\" />
+    <Folder Include="src\components\Join\" />
     <Folder Include="src\Routes\" />
   </ItemGroup>
 </Project>

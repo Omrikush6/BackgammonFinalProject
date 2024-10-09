@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+.join-container {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    position: relative;
+    overflow: hidden;
+    width: 600px;
+    max-width: 100%;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+}
+
+.join-title {
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.join-description {
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+    max-width: 80%;
+}
+
+.join-item {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 45px;
+    border: 1px solid #219144;
+    background-color: #219144;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .join-item:hover {
+        transform: scale(1.05);
+        background-color: #1a7436;
+    }
+
+    .join-item:active {
+        transform: scale(0.95);
+    }
+
+    .join-item:focus {
+        outline: none;
+    }
+
+    .join-item.ghost {
+        background-color: transparent;
+        border-color: #219144;
+        color: #219144;
+    }
+
+        .join-item.ghost:hover {
+            background-color: rgba(33, 145, 68, 0.1);
+        }
+
+
+.game-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+    .game-list h2 {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .game-list button {
+        width: calc(50% - 5px);
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        text-align: center;
+        transition: background-color 0.3s ease;
+    }
+
+        .game-list button:hover {
+            background-color: #218838;
+        }
+
+@media (max-width: 600px) {
+    .game-list button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .join-container {
+        width: 90%;
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .join-item {
+        font-size: 14px;
+        padding: 10px 30px;
+    }
+}
