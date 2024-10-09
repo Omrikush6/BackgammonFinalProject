@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using BackgammonFinalProject.Models;
 
-namespace BackgammonFinalProject.Models
+namespace BackgammonFinalProject.Server.Models
 {
     public class Message
     {

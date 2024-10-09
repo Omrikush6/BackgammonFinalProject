@@ -1,17 +1,15 @@
-﻿using BackgammonFinalProject.Data;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace BackgammonFinalProject.Repositories
+namespace BackgammonFinalProject.Server.Repositories
 {
+    using BackgammonFinalProject.Server.Data;
+    using BackgammonFinalProject.Server.Models;
+    using BackgammonFinalProject.Server.Repositories.Interfaces;
     using Microsoft.EntityFrameworkCore;
 
-    public class UserRepository : IUserRepository
+    public class UserRepository(BackgammonDbContext context) : IUserRepository
     {
-        private readonly BackgammonDbContext _context;
-
-        public UserRepository(BackgammonDbContext context) => _context = context;
+        private readonly BackgammonDbContext _context = context;
 
         public async Task<User?> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
 

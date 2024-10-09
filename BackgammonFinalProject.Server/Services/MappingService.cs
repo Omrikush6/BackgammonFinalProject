@@ -1,5 +1,5 @@
-﻿using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Models;
+﻿using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Models;
 
 namespace BackgammonFinalProject.Server.Services
 {
@@ -11,11 +11,12 @@ namespace BackgammonFinalProject.Server.Services
             return new GameDto
             {
                 Id = game.Id,
-                GameState = game.GameState,
+                GameStatus = game.GameStatus,
                 CurrentTurn = game.CurrentTurn,
+                WinnerId = game.WinnerId,
                 StartTime = game.StartTime,
                 EndTime = game.EndTime,
-                PlayerIds = game.Players?.Select(p => p.Id).ToList() ?? new List<int>(),
+                PlayerIds = game.Players?.Select(p => p.Id).ToHashSet() ?? [],
                 Messages = game.Messages?.Select(m => new MessageDto
                 {
                     Id = m.Id,
@@ -23,18 +24,21 @@ namespace BackgammonFinalProject.Server.Services
                     Timestamp = m.Timestamp,
                     SenderId = m.Sender?.Id ?? 0,
                     SenderName = m.Sender!.Username
-                }).ToList() ?? new List<MessageDto>()
+                }).ToList() ?? [],
+                CurrentStateJson = game.CurrentStateJson
+                
             };
         }
 
         public UserDto MapUserToDto(User user)
         {
-            return new UserDto{
+            return new UserDto
+            {
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                CreatedAt = user.CreatedAt
-
+                CreatedAt = user.CreatedAt,
+                GameIds = user.Games.Select(game => game.Id).ToList()
             };
         }
         public MessageDto MapMessageToDto(Message message)

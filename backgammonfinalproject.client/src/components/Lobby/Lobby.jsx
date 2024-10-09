@@ -14,12 +14,12 @@ const LobbyItem = ({ label, onClick, ghost }) => (
   </button>
 );
 
-const Lobby = ({ onLogout }) => {
+const Lobby = ({ }) => {
+  const { logout } = useContext(UserContext);
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
 
   const handleGoBack = () => {
-    onLogout();
+    logout();
     navigate('/');
   };
   
@@ -38,7 +38,6 @@ const Lobby = ({ onLogout }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({})
       });
 
       if (response.ok) {

@@ -13,11 +13,10 @@ import Join from './components/Join/Join';
 export const UserContext = createContext(null);
 
 function App() {
-
   const checkToken = useCallback(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = jwtDecode(token);
       const tokenExpiration = payload.exp * 1000;
       return Date.now() <= tokenExpiration;
     }
@@ -32,18 +31,24 @@ function App() {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
+        const isValidToken = checkToken(); // Check if the token is valid
+
         setUser({
           id: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
-          name: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
+          name: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
         });
-        setIsLoggedIn(true);
+
+        // Set isLoggedIn based on token validity
+        setIsLoggedIn(isValidToken);
       } catch (error) {
         console.error('Error decoding token:', error);
         localStorage.removeItem('token');
         setIsLoggedIn(false);
       }
+    } else {
+      setIsLoggedIn(false); 
     }
-  }, []);
+  }, [checkToken]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -52,7 +57,7 @@ function App() {
       if (!tokenValid) {
         setUser(null);
       }
-    }, 600000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [checkToken]);
@@ -93,7 +98,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
-        <Route path='/lobby' element={isLoggedIn ? <Lobby onLogout={logout} /> : <Navigate to='/' />} />
+        <Route path='/lobby' element={isLoggedIn ? <Lobby  /> : <Navigate to='/' />} />
         <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
         <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/" />} /> 
         <Route path="/contact" element={<Contact />} />

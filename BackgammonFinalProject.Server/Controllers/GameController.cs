@@ -1,55 +1,58 @@
-﻿using BackgammonFinalProject.DTOs;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories.Interfaces;
+﻿using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Services;
-using BackgammonFinalProject.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Repositories.Interfaces;
 
-namespace BackgammonFinalProject.Controllers
+namespace BackgammonFinalProject.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class GameController : ControllerBase
+    [Authorize]
+    public class GameController(GameService gameService, IUserRepository userRepository, MappingService mappingService) : ControllerBase
     {
-        private readonly GameService _gameService;
-        private readonly IUserRepository _userRepository;
-        private readonly MappingService _mappingService;
-
-        public GameController(GameService gameService, IUserRepository userRepository, MappingService mappingService)
-        {
-            _gameService = gameService;
-            _userRepository = userRepository;
-            _mappingService = mappingService;
-        }
+        private readonly GameService _gameService = gameService;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly MappingService _mappingService = mappingService;
 
         [HttpPost("CreateGame")]
         public async Task<ActionResult<GameDto>> CreateGame()
         {
             try
             {
-                var playerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (playerId == null) { return NotFound($"User with ID {playerId} not found."); }
+                var playerId = (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value) as string;
+                if (string.IsNullOrEmpty(playerId))
+                {
+                    return Unauthorized("User not authenticated or user ID not found.");
+                }
 
-                var player = await _userRepository.GetByIdAsync(int.Parse(playerId.Value));
+                var player = await _userRepository.GetByIdAsync(int.Parse(playerId));
                 if (player == null)
+                {
                     return NotFound($"User with ID {playerId} not found.");
+                }
 
                 var newGame = await _gameService.CreateGameAsync(player);
                 return Ok(_mappingService.MapGameToDto(newGame));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error creating game: {ex.Message}");
             }
-           
         }
 
         [HttpPost("JoinGame/{gameId}")]
-        public async Task<ActionResult<GameDto>> JoinGame(int gameId, [FromBody] int userId)
+        public async Task<ActionResult<GameDto>> JoinGame(int gameId)
         {
+            var playerId = (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value) as string;
+            if (string.IsNullOrEmpty(playerId))
+            {
+                return Unauthorized("User not authenticated or user ID not found.");
+            }
+
+            var userId = int.Parse(playerId);
             var result = await _gameService.JoinGameAsync(gameId, userId);
             if (!result.Success)
             {
@@ -77,8 +80,31 @@ namespace BackgammonFinalProject.Controllers
             return Ok(gameDtos);
         }
 
-        //TODO create startgame method
+        [HttpPost("StartGame/{gameId}")]
+        public async Task<ActionResult<GameDto>> StartGame(int gameId)
+        {
+            var result = await _gameService.StartGameAsync(gameId);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(_mappingService.MapGameToDto(result.Game!));
+        }
 
-       
+        [HttpPut("UpdateGame/{gameId}")]
+        public async Task<ActionResult<GameDto>> UpdateGame(int gameId, [FromBody] GameDto gameDto)
+        {
+            if (gameId != gameDto.Id)
+            {
+                return BadRequest("Game ID mismatch");
+            }
+
+            var result = await _gameService.UpdateGameAsync(gameId, gameDto);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(_mappingService.MapGameToDto(result.Game!));
+        }
     }
 }

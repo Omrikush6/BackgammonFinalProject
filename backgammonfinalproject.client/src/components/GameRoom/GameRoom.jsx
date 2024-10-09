@@ -1,110 +1,98 @@
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import GameLogic from '../../Services/GameLogic';
+import SignalRService from '../../Services/SignalRService';
 import { UserContext } from '../../App';
-import Board from '../Board/Board';
+import Game from '../Game/Game';
+import Chat from '../Chat/Chat';
 import './GameRoom.css';
-
 
 function GameRoom() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { user, isLoggedIn } = useContext(UserContext);
-  const [game, setGame] = useState(null);
+  const [game, setGame] = useState(GameLogic.gameState);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
   const [error, setError] = useState(null);
-  const connectionRef = useRef(null);
 
-  // Delay SignalR connection until the user is available
-  const setupSignalRConnection = useCallback(async () => {
-    if (!user || !user.id) return; // Make sure the user is fully loaded
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError("No authentication token found.");
-      return;
-    }
-
-    try {
-      const connection = new HubConnectionBuilder()
-        .withUrl(`https://localhost:7027/gameHub?access_token=${token}`)
-        .configureLogging(LogLevel.Information)
-        .withAutomaticReconnect()
-        .build();
-
-      connection.on("PlayerJoined", setGame);
-      connection.on("MessageReceived", (message) => {
-        setMessages(prevMessages => [...prevMessages, message]);
-      });
-
-      await connection.start();
-      console.log("SignalR Connected.");
-
-      await connection.invoke("JoinGame", parseInt(gameId), parseInt(user.id));
-      connectionRef.current = connection;
-    } catch (err) {
-      console.error('SignalR Connection Error: ', err);
-      setError(`Failed to connect to game: ${err.message}`);
-    }
-  }, [user, gameId]);
-
-  // Set up SignalR connection when `user` changes
-  useEffect(() => {
-    if (user && user.id) {
-      setupSignalRConnection();
-    }
-
-    return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop();
-      }
-    };
-  }, [setupSignalRConnection, user]);
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
-      return;
+      navigate('/');
     }
+  }, [isLoggedIn, navigate]);
 
-    const fetchGame = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError("No authentication token found.");
-        return;
-      }
+  useEffect(() => {
+    if (!user || !user.id) return;
 
+    const initializeGame = async () => {
       try {
-        const response = await fetch(`https://localhost:7027/api/game/${gameId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch game: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setGame(data);
-        setMessages(data.messages || []);
+        await GameLogic.joinGame(gameId, user.id);
+        setGame({...GameLogic.gameState});
+        setMessages(GameLogic.gameState.messages || []);
       } catch (error) {
-        console.error('Error:', error);
-        setError(error.message);
+        handleError('initialize game', error);
       }
     };
 
-    fetchGame();
-  }, [gameId, navigate, isLoggedIn]);
+    initializeGame();
 
-  const sendMessage = async () => {
-    if (inputMessage.trim() === '' || !connectionRef.current || !user) return;
+    return () => {
+      SignalRService.disconnect();
+    };
+  }, [gameId, user]);
 
+  useEffect(() => {
+    const handleGameUpdated = (updatedGame) => {
+      GameLogic.initializeGame(updatedGame);
+      setGame({...GameLogic.gameState});
+    };
+
+    const handleMessageReceived = (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+    };
+
+    SignalRService.setOnGameUpdated(handleGameUpdated);
+    SignalRService.setOnMessageReceived(handleMessageReceived);
+    SignalRService.setOnPlayerJoined(handleGameUpdated);
+    SignalRService.setOnError(setError);
+
+    return () => {
+      SignalRService.setOnGameUpdated(null);
+      SignalRService.setOnMessageReceived(null);
+      SignalRService.setOnPlayerJoined(null);
+      SignalRService.setOnError(null);
+    };
+  }, []);
+
+  const handleError = (action, error) => {
+    console.error(`Error ${action}: `, error);
+    setError(`Failed to ${action}: ${error.message}`);
+  };
+
+
+  const handleSendMessage = async (message) => {
+    if (!user) return;
     try {
-      await connectionRef.current.invoke("SendMessage", parseInt(gameId), parseInt(user.id), inputMessage);
-      setInputMessage('');
+      await SignalRService.sendMessage(gameId, user.id, message);
     } catch (err) {
-      console.error('Error sending message: ', err);
-      setError(`Failed to send message: ${err.message}`);
+      handleError('send message', err);
+    }
+  };
+
+  const handleRollDice = () => {
+    try {
+      setGame(prevGame => ({...prevGame, diceValues: GameLogic.rollDice()}));
+    } catch (err) {
+      handleError('roll dice', err);
+    }
+  };
+  const handleMove = async (from, to) => {
+    try {
+      const updatedGame = await GameLogic.moveChecker(from, to);
+      setGame(prevGame => ({...prevGame, ...updatedGame}));
+    } catch (err) {
+      handleError('move checker', err);
     }
   };
 
@@ -117,28 +105,14 @@ function GameRoom() {
   }
 
   return (
-      <div className="game-room">
-      <div className="game-board">
-        <Board game={game} />
-      </div>
-      <div className="chat-box">
-        <div className="messages">
-          {messages.map((msg, index) => (
-            <div key={index} className="message">
-              {msg.senderName}: {msg.content}
-            </div>
-          ))}
-        </div>
-        <div className="message-input">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          />
-          <button onClick={sendMessage}>Send</button>
-        </div>
-      </div>
+    <div className="game-room">
+      <Game 
+        game={game} 
+        onRollDice={handleRollDice}
+        onMove={handleMove}
+        onError={handleError}
+      />
+      <Chat messages={messages} onSendMessage={handleSendMessage} user={user} />
     </div>
   );
 }

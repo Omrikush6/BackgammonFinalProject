@@ -1,17 +1,15 @@
-﻿using BackgammonFinalProject.Data;
-using BackgammonFinalProject.Models;
-using BackgammonFinalProject.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace BackgammonFinalProject.Repositories
+namespace BackgammonFinalProject.Server.Repositories
 {
+    using BackgammonFinalProject.Server.Data;
+    using BackgammonFinalProject.Server.Models;
+    using BackgammonFinalProject.Server.Repositories.Interfaces;
     using Microsoft.EntityFrameworkCore;
 
-    public class GameRepository : IGameRepository
+    public class GameRepository(BackgammonDbContext context) : IGameRepository
     {
-        private readonly BackgammonDbContext _context;
-
-        public GameRepository(BackgammonDbContext context) => _context = context;
+        private readonly BackgammonDbContext _context = context;
 
         public async Task<Game?> GetByIdAsync(int id)
         {
@@ -22,22 +20,13 @@ namespace BackgammonFinalProject.Repositories
                 .FirstOrDefaultAsync(g => g.Id == id);
         }
         public async Task<List<Game>> GetActiveGamesAsync() =>
-            await _context.Games.Where(g => g.EndTime == null).Include(x => x.Players).Include(x =>x.Messages).AsSplitQuery().ToListAsync();
+            await _context.Games.Where(g => g.EndTime == null).Include(x => x.Players).Include(x => x.Messages).AsSplitQuery().ToListAsync();
 
         public async Task<Game> CreateAsync(Game game)
         {
-            try
-            {
-                _context.Games.Add(game);
-                await _context.SaveChangesAsync();
-                return game;
-            }
-            catch (Exception e)
-            {
-                string message = e.Message;
-
-                return new();
-            }
+            _context.Games.Add(game);
+            await _context.SaveChangesAsync();
+            return game;
         }
 
         public async Task UpdateAsync(Game game)

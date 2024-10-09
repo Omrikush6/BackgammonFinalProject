@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BackgammonFinalProject.DTOs
+namespace BackgammonFinalProject.Server.DTOs
 {
     public class UserDto
     {
@@ -22,7 +22,7 @@ namespace BackgammonFinalProject.DTOs
 
         public DateTime CreatedAt { get; set; }
 
-        public List<int> GameIds { get; set; } = new List<int>();
+        public List<int> GameIds { get; set; } = [];
 
 
     }

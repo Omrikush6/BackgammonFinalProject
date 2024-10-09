@@ -1,0 +1,30 @@
+.bar {
+  width: 80px;
+  height: 100%;
+  background-color: #8B4513;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bar-section.top.selected,
+.bar-section.bottom.selected {
+  border: 2px solid yellow;
+  box-shadow: 0 0 10px yellow;
+}
+
+/* Add these new styles for better visibility */
+.bar-section {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.bar-section:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}

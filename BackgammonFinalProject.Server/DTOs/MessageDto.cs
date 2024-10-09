@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BackgammonFinalProject.DTOs
+namespace BackgammonFinalProject.Server.DTOs
 {
     public class MessageDto
     {
@@ -18,6 +18,6 @@ namespace BackgammonFinalProject.DTOs
         public int SenderId { get; set; }
 
         [Required]
-        public string SenderName { get; set; }
+        public string? SenderName { get; set; }
     }
 }

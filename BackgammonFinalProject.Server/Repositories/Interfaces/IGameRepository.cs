@@ -1,6 +1,6 @@
-﻿using BackgammonFinalProject.Models;
+﻿using BackgammonFinalProject.Server.Models;
 
-namespace BackgammonFinalProject.Repositories.Interfaces
+namespace BackgammonFinalProject.Server.Repositories.Interfaces
 {
     public interface IGameRepository
     {

@@ -10,6 +10,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\NewFolder\**" />
+    <Content Remove="wwwroot\NewFolder\**" />
+    <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+    <None Remove="wwwroot\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\back-gammon1.jpeg" />
+    <Content Remove="wwwroot\back-gammon2.jpeg" />
+    <Content Remove="wwwroot\back-gommon3.jpeg" />
+    <Content Remove="wwwroot\back-gommon4.jpeg" />
+    <Content Remove="wwwroot\back-gommon5.jpeg" />
+    <Content Remove="wwwroot\react.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\backgammonfinalproject.client\backgammonfinalproject.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
@@ -39,7 +55,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\NewFolder\" />
+    <None Include="wwwroot\back-gammon1.jpeg" />
+    <None Include="wwwroot\back-gammon2.jpeg" />
+    <None Include="wwwroot\back-gommon3.jpeg" />
+    <None Include="wwwroot\back-gommon4.jpeg" />
+    <None Include="wwwroot\back-gommon5.jpeg" />
+    <None Include="wwwroot\react.svg" />
   </ItemGroup>
 
 </Project>

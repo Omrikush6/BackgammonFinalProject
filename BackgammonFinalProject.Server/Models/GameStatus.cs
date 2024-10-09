@@ -1,6 +1,6 @@
-﻿namespace BackgammonFinalProject.Models
+﻿namespace BackgammonFinalProject.Server.Models
 {
-    public enum GameState
+    public enum GameStatus
     {
         WaitingForPlayers,
         ReadyToStart,

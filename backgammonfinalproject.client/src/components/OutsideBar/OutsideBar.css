@@ -1,0 +1,22 @@
+.outside-bar {
+    width: 60px;
+    height: 100%;
+    background-color: #2e1808;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  
+  .outside-bar.white {
+    justify-content: flex-start;
+  }
+
+  
+  .outside-bar[player="white"] {
+    justify-content: flex-start;
+  }
+  
+  .outside-bar[player="black"] {
+    justify-content: flex-end;
+  }
