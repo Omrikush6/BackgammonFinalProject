@@ -13,15 +13,15 @@ namespace BackgammonFinalProject.Server.Hubs
         {
             try
             {
-                var result = await _gameService.JoinGameAsync(gameId, userId);
-                if (result.Success)
+                var (Success, Message, Game) = await _gameService.JoinGameAsync(gameId, userId);
+                if (Success)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
-                    await Clients.Group(gameId.ToString()).SendAsync("PlayerJoined", _mappingService.MapGameToDto(result.Game!));
+                    await Clients.Group(gameId.ToString()).SendAsync("PlayerJoined", _mappingService.MapGameToDto(Game!));
                 }
                 else
                 {
-                    await Clients.Caller.SendAsync("JoinGameError", result.Message);
+                    await Clients.Caller.SendAsync("JoinGameError", Message);
                 }
             }
             catch (Exception ex)
@@ -32,40 +32,40 @@ namespace BackgammonFinalProject.Server.Hubs
 
         public async Task StartGame(int gameId)
         {
-            var result = await _gameService.StartGameAsync(gameId);
-            if (result.Success)
+            var (Success, Message, Game) = await _gameService.StartGameAsync(gameId);
+            if (Success)
             {
-                await Clients.Group(gameId.ToString()).SendAsync("GameStarted", _mappingService.MapGameToDto(result.Game!));
+                await Clients.Group(gameId.ToString()).SendAsync("GameStarted", _mappingService.MapGameToDto(Game!));
             }
             else
             {
-                throw new HubException(result.Message);
+                throw new HubException(Message);
             }
         }
 
         public async Task UpdateGame(int gameId, GameDto gameDto)
         {
-            var result = await _gameService.UpdateGameAsync(gameId, gameDto);
-            if (result.Success)
+            var (Success, Message, Game) = await _gameService.UpdateGameAsync(gameId, gameDto);
+            if (Success)
             {
-                await Clients.Group(gameId.ToString()).SendAsync("GameUpdated", _mappingService.MapGameToDto(result.Game!));
+                await Clients.Group(gameId.ToString()).SendAsync("GameUpdated", _mappingService.MapGameToDto(Game!));
             }
             else
             {
-                throw new HubException(result.Message);
+                throw new HubException(Message);
             }
         }
 
         public async Task SendMessage(int gameId, int playerId, string messageContent)
         {
-            var result = await _gameService.AddMessageAsync(gameId, playerId, messageContent);
-            if (result.Success)
+            var (Success, Message, message) = await _gameService.AddMessageAsync(gameId, playerId, messageContent);
+            if (Success)
             {
-                await Clients.Group(gameId.ToString()).SendAsync("MessageReceived", _mappingService.MapMessageToDto(result.message!));
+                await Clients.Group(gameId.ToString()).SendAsync("MessageReceived", _mappingService.MapMessageToDto(message!));
             }
             else
             {
-                await Clients.Caller.SendAsync("MessageError", result.Message);
+                await Clients.Caller.SendAsync("MessageError", Message);
             }
         }
     }
