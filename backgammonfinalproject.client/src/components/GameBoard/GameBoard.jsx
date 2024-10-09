@@ -11,18 +11,14 @@ const GameBoard = ({ game, onMove, handleGameStateChange }) => {
 
   const handlePointClick = (index) => {
     if (selectedPoint === null) {
-      // Selecting a point with checkers
       if (game.points[index].checkers > 0) {
         setSelectedPoint(index);
       }
-      //alert(selectedPoint);
     } else {
-      // Attempt to move the checker
       onMove(selectedPoint, index);
       setSelectedPoint(null);
     }
-  };
-  
+  };  
   const renderPoints = (start, end) => {
     if (!game || !game.points) {
       console.error('Game or game.points is undefined');
@@ -52,7 +48,7 @@ const GameBoard = ({ game, onMove, handleGameStateChange }) => {
 
     return points;
   };
-
+debugger
   return (
     <div className="game-board">
       <OutsideBar 
@@ -63,7 +59,7 @@ const GameBoard = ({ game, onMove, handleGameStateChange }) => {
         <div className="board-quadrant top-left">{renderPoints(12, 17)}</div>
         <div className="board-quadrant bottom-left">{renderPoints(11, 6)}</div>
       </div>
-      <Bar checkersWhite={game?.barWhite ?? 1} checkersBlack={game?.barBlack ?? 1}
+      <Bar whitePieces={game?.barWhite ?? 1} blackPieces={game?.barBlack ?? 1}
       onWhiteClick={() => handlePointClick('barWhite')}
       onBlackClick={() => handlePointClick('barBlack')}
       />

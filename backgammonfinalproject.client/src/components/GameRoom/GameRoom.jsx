@@ -15,70 +15,61 @@ function GameRoom() {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
 
+
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
-      return;
     }
+  }, [isLoggedIn, navigate]);
 
-    let isMounted = true;
+  useEffect(() => {
+    if (!user || !user.id) return;
 
     const initializeGame = async () => {
-      if (!user || !user.id) return;
-
       try {
         await GameLogic.joinGame(gameId, user.id);
-        if (isMounted) {
-          setGame({...GameLogic.gameState});
-          setMessages(GameLogic.gameState.messages || []);
-        }
-
-        SignalRService.setOnGameUpdated((updatedGame) => {
-          if (isMounted) {
-            GameLogic.initializeGame(updatedGame);
-            setGame({...GameLogic.gameState});
-          }
-        });
-
-        SignalRService.setOnMessageReceived((message) => {
-          if (isMounted) {
-            setMessages(prevMessages => [...prevMessages, message]);
-          }
-        });
-
-        SignalRService.setOnPlayerJoined((updatedGame) => {
-          if (isMounted) {
-            GameLogic.initializeGame(updatedGame);
-            setGame({...GameLogic.gameState});
-          }
-        });
-
-        SignalRService.setOnError((errorMessage) => {
-          if (isMounted) {
-            setError(errorMessage);
-          }
-        });
+        setGame({...GameLogic.gameState});
+        setMessages(GameLogic.gameState.messages || []);
       } catch (error) {
-        console.error('Error:', error);
-        if (isMounted) {
-          setError(error.message);
-        }
+        handleError('initialize game', error);
       }
     };
 
     initializeGame();
 
     return () => {
-      isMounted = false;
       SignalRService.disconnect();
     };
-  }, [gameId, navigate, isLoggedIn, user]);
+  }, [gameId, user]);
 
-  const handleGameStateChange = (newGameState) => {
-    //setGame(newGameState);
-    // Here you might want to send the updated game state to the server
-    //GameLogic.updateGameState(newGameState);
+  useEffect(() => {
+    const handleGameUpdated = (updatedGame) => {
+      GameLogic.initializeGame(updatedGame);
+      setGame({...GameLogic.gameState});
+    };
+
+    const handleMessageReceived = (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+    };
+
+    SignalRService.setOnGameUpdated(handleGameUpdated);
+    SignalRService.setOnMessageReceived(handleMessageReceived);
+    SignalRService.setOnPlayerJoined(handleGameUpdated);
+    SignalRService.setOnError(setError);
+
+    return () => {
+      SignalRService.setOnGameUpdated(null);
+      SignalRService.setOnMessageReceived(null);
+      SignalRService.setOnPlayerJoined(null);
+      SignalRService.setOnError(null);
+    };
+  }, []);
+
+  const handleError = (action, error) => {
+    console.error(`Error ${action}: `, error);
+    setError(`Failed to ${action}: ${error.message}`);
   };
+
 
 
   const handleSendMessage = async (message) => {
@@ -86,32 +77,23 @@ function GameRoom() {
     try {
       await SignalRService.sendMessage(gameId, user.id, message);
     } catch (err) {
-      console.error('Error sending message: ', err);
-      setError(`Failed to send message: ${err.message}`);
+      handleError('send message', err);
     }
   };
 
   const handleRollDice = () => {
     try {
-      let dice = GameLogic.rollDice();
-      setGame(prevGame => ({...prevGame,diceValues: dice}));
+      setGame(prevGame => ({...prevGame, diceValues: GameLogic.rollDice()}));
     } catch (err) {
-      console.error('Error rolling dice: ', err);
-      setError(`Failed to roll dice: ${err.message}`);
+      handleError('roll dice', err);
     }
   };
-
   const handleMove = async (from, to) => {
     try {
-      debugger;
       const updatedGame = await GameLogic.moveChecker(from, to);
-      setGame(prevGame => ({
-        ...prevGame,
-        ...updatedGame
-      }));
+      setGame(prevGame => ({...prevGame, ...updatedGame}));
     } catch (err) {
-      console.error('Error moving checker: ', err);
-      setError(`Failed to move checker: ${err.message}`);
+      handleError('move checker', err);
     }
   };
 
@@ -127,7 +109,6 @@ function GameRoom() {
     <div className="game-room">
       <Game 
         game={game} 
-        onGameStateChange={handleGameStateChange}
         onRollDice={handleRollDice}
         onMove={handleMove}
       />

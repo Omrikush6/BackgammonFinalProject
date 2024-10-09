@@ -6,14 +6,6 @@ class GameLogic {
         this.selectedChecker = null;
     }
 
-    selectChecker(pointIndex) {
-        if (this.gameState.points[pointIndex].checkers > 0) {
-            this.selectedChecker = pointIndex;
-            return true;
-        }
-        return false;
-    }
-
     resetGameState() {
         this.gameState = {
             id: null,
@@ -112,6 +104,14 @@ class GameLogic {
         }
     }
 
+    selectChecker(pointIndex) {
+        if (this.gameState.points[pointIndex].checkers > 0) {
+            this.selectedChecker = pointIndex;
+            return true;
+        }
+        return false;
+    }
+
     rollDice() {
         const diceValues = [
             Math.floor(Math.random() * 6) + 1,
@@ -152,15 +152,11 @@ class GameLogic {
             console.error('Invalid move');
             return false;
         }
-    }    async updateGameState() {
-        try {
-            const gamestate = this.getGameStateForUpdate();
-            console.log('Updating game state:', gamestate);
-            await SignalRService.updateGameState(gamestate);
-        } catch (error) {
-            console.error('Error updating game state:', error);
-            throw error;
-        }
+    }    
+    
+    updateGameState() {
+        SignalRService.updateGameState(this.getGameStateForUpdate());
+        console.log(this.gameState)
     }
 
     getGameStateForUpdate() {
@@ -189,28 +185,6 @@ class GameLogic {
                 isRolled: this.gameState.isRolled
             })
         };
-    }
-
-    mapGameStateToEnum(gameStatus) {
-        const stateMap = {
-            'WaitingForPlayers': 0,
-            'ReadyToStart': 1,
-            'InProgress': 2,
-            'Completed': 3,
-            'Abandoned': 4
-        };
-        return stateMap[gameStatus] || 0;
-    }
-
-    mapGameStatusFromEnum(gameStateEnum) {
-        const stateMap = {
-            0: 'WaitingForPlayers',
-            1: 'ReadyToStart',
-            2: 'InProgress',
-            3: 'Completed',
-            4: 'Abandoned'
-        };
-        return stateMap[gameStateEnum] || 'WaitingForPlayers';
     }
 }
 
