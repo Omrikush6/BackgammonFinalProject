@@ -77,6 +77,8 @@
     gap: 10px;
     justify-content: space-between;
     padding: 10px;
+    overflow-y: auto;
+    max-height: 500px;
 }
 
     .game-list h2 {
@@ -111,8 +113,10 @@
 @media (max-width: 768px) {
     .join-container {
         width: 90%;
+        height: 700px;
         min-height: auto;
         padding: 20px;
+        margin: 0 auto;
     }
 
     .join-item {

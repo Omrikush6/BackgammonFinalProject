@@ -1,104 +1,92 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import  GameLogic  from '../../Services/GameLogic';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../App'
 import './Join.css';
 
-const Join = () => {
-    const navigate = useNavigate();
+const useGames = () => {
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { user } = useContext(UserContext)
     const [error, setError] = useState(null);
-
-    useEffect(() => {
-        fetchGames();
+  
+    const fetchGames = useCallback(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const gamesData = await GameLogic.fetchAllGames();
+        setGames(gamesData);
+      } catch (error) {
+        console.error('Error fetching games:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     }, []);
+  
+    useEffect(() => {
+      fetchGames();
+    }, [fetchGames]);
+  
+    return { games, loading, error, refetchGames: fetchGames };
+  };
 
-    const fetchGames = async () => {
-        setLoading(true);
-        setError(null);
-        const token = localStorage.getItem('token');
+
+
+const Join = () => {
+    const navigate = useNavigate();
+    const { user } = useContext(UserContext);
+    const { games, loading, error, refetchGames } = useGames();
+    const [joinError, setJoinError] = useState(null);
+
+    const handleJoinGame = async (gameId) => {
+        setJoinError(null);
         try {
-            const response = await fetch('https://localhost:7027/api/Game/AllGames', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : undefined
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`Error fetching games: ${response.statusText}`);
-            }
-            const gamesData = await response.json();
-            setGames(gamesData);
+          await GameLogic.joinGame(gameId, user.id);
+          navigate(`/game/${gameId}`);
         } catch (error) {
-            console.error('Error fetching games:', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
+          console.error(error);
+          setJoinError(error.message);
         }
-    };
+      };
 
-    const joinGame = async (gameId) => {
-        setLoading(true);
-        setError(null);
-        const token = localStorage.getItem('token');
-        const userId = user.id
+      const renderGameItem = (game) => (
+        <button key={game.id} onClick={() => handleJoinGame(game.id)} className="game-item">
+          Game ID: {game.id}
+          <br />
+          Players: {game.playerIds.length}/2
+        </button>
+      );
 
-        if (!userId) {
-            setError('User ID not found. Please log in again.');
-            setLoading(false);
-            return;
-        }
 
-        try {
-            const response = await fetch(`https://localhost:7027/api/Game/JoinGame/${gameId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : undefined
-                },
-                body: JSON.stringify(userId) 
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error joining game: ${response.status} ${response.statusText} - ${errorText}`);
-            }
-
-            const joinData = await response.json();
-            console.log('Joined game successfully:', joinData);
-            navigate(`/game/${gameId}`); 
-        } catch (error) {
-            console.error('Error joining game:', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
+      return (
         <div className="join-container">
-            <h1 className="join-title">Join Game</h1>
-            <p className="join-description">
-                Welcome to joining game area
-            </p>
-            {loading && <p>Loading...</p>}
-            {error && <p className="error-message">Error: {error}</p>}
-            <div className="game-list">
-                <h2>Available Games:</h2>
-                {games.map(game => (
-                    <button key={game.id} onClick={() => joinGame(game.id)}>
-                        Player Name:{user.name}
-                        <br />
-                    </button>
-                ))}
-            </div>
-            <button className="join-item ghost" onClick={() => navigate('/lobby')}>
-                Back to Lobby
-            </button>
+          <h1 className="join-title">Join Game</h1>
+          <p className="join-description">Please select a game to join.</p>
+          
+          {/* Error and loading states */}
+          {loading && <p>Loading games...</p>}
+          {error && <p className="error-message">Error loading games: {error}</p>}
+          {joinError && <p className="error-message">{joinError}</p>}
+    
+          {/* Game list */}
+          <div className="game-list">
+            <h2>Available Games:</h2>
+            {games.length > 0 ? (
+              games.map(renderGameItem)
+            ) : (
+              <p>No games available. Why not create one?</p>
+            )}
+          </div>
+    
+          {/* Navigation buttons */}
+          <button className="join-item ghost" onClick={() => navigate('/lobby')}>
+            Back to Lobby
+          </button>
+          <button className="join-item" onClick={refetchGames}>
+            Refresh Games
+          </button>
         </div>
-    );
-};
-
-export default Join;
+      );
+    };
+    
+    export default Join;

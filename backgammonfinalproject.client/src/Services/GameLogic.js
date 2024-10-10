@@ -57,6 +57,23 @@ class GameLogic {
         }
     }
 
+    async fetchAllGames() {
+        const token = localStorage.getItem('token');
+        const response = await fetch('https://localhost:7027/api/Game/AllGames', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Error fetching games: ${response.statusText}`);
+        }
+    
+        return await response.json();
+    }
+
     async joinGame(gameId, userId) {
         try {
             const token = localStorage.getItem('token');
