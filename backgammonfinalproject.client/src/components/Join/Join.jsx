@@ -50,7 +50,6 @@ const Join = () => {
       };
 
       const getGameButtonProps = useCallback((game) => {
-        debugger;
         const isUserInGame = game.playerIds.includes(parseInt(user.id));
         const isGameFull = game.playerIds.length === 2;
         
@@ -66,9 +65,9 @@ const Join = () => {
           disabled: isGameFull && !isUserInGame,
           onClick: () => isUserInGame ? navigate(`/game/${game.id}`) : handleJoinGame(game.id)
         };
-      }, [user.id, navigate, handleJoinGame]);
+      }, [user, navigate, handleJoinGame]);
 
-      const renderGameItem = (game) => {
+    const renderGameItem = (game) => {
     const buttonProps = getGameButtonProps(game);
     const isUserInGame = game.playerIds.includes(user.id);
 
@@ -91,7 +90,7 @@ const Join = () => {
       if (!userInA && userInB) return 1;
       return (2 - a.playerIds.length) - (2 - b.playerIds.length);
     });
-  }, [games, user.id]);
+  }, [games, user]);
 
 
   return (

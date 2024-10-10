@@ -7,6 +7,8 @@ class SignalRService {
         this.onMessageReceived = null;
         this.onPlayerJoined = null;
         this.onError = null;
+        this.onGameReadyToStart = null;
+        this.onGameStarted = null;
     }
 
     async connect(token, gameId, userId) {
@@ -32,6 +34,10 @@ class SignalRService {
             if (this.onError) this.onError(errorMessage);
         });
 
+        this.connection.on("GameStarted", (updatedGame) => { // New
+            if (this.onGameStarted) this.onGameStarted(updatedGame);
+        });
+
         await this.connection.start();
         console.log("SignalR Connected.");
 
@@ -43,6 +49,13 @@ class SignalRService {
             await this.connection.stop();
             console.log("SignalR Disconnected.");
         }
+    }
+
+    async StartGame(gameId) {
+        if (!this.connection) {
+            throw new Error("SignalR connection not established");
+        }
+        await this.connection.invoke("StartGame", parseInt(gameId));
     }
 
     async sendMessage(gameId, userId, message) {
@@ -57,6 +70,15 @@ class SignalRService {
             throw new Error("SignalR connection not established");
         }   
         await this.connection.invoke("UpdateGame",parseInt(gameState.id), gameState);
+    }
+
+    setOnGameReadyToStart(callback) { // New
+        this.onGameReadyToStart = callback;
+    }
+
+    // New setter for GameStarted event
+    setOnGameStarted(callback) { // New
+        this.onGameStarted = callback;
     }
 
     setOnGameUpdated(callback) {

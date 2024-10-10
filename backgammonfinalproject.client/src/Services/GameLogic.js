@@ -91,9 +91,6 @@ class GameLogic {
             const data = await response.json();
             this.initializeGame(data);
             await SignalRService.connect(token, gameId, userId);
-            if (this.gameState.playerIds.length === 2) {
-                await this.startGame(gameId);
-            }
             return this.gameState;
         } catch (error) {
             console.error('Error joining game:', error);
@@ -129,9 +126,27 @@ class GameLogic {
         if (gameData.currentStateJson) {
             const additionalState = JSON.parse(gameData.currentStateJson);
             Object.assign(this.gameState, additionalState);
+            if(this.gameState.players == null && this.gameState.gameStatus == 2) {
+                this.initializePlayers();
+            }
         }
 
         return this.gameState;
+    }
+
+    initializePlayers() {
+        if (this.gameState.playerIds.length !== 2 || !this.gameState.currentTurn) {
+            console.error('Not enough information to initialize players');
+            return;
+        }
+        this.gameState.players = {
+            white: {
+                id: this.gameState.currentTurn
+            },
+            black: {
+                id:this.gameState.currentTurn === this.gameState.playerIds[0] ? this.gameState.playerIds[1] : this.gameState.playerIds[0]
+            }
+        };
     }
 
     initializePoints() {    
@@ -156,15 +171,27 @@ class GameLogic {
         return false;
     }
 
-    rollDice() {
+    rollDice(userId) {
+
+        if (this.gameState.currentTurn != userId) {
+            return { success: false, message: "It's not your turn", diceValues: this.gameState.diceValues };
+        }
+
+        if (this.gameState.isRolled) {
+            return { success: false, message: "Dice already rolled", diceValues: this.gameState.diceValues };
+        }
+        
         const diceValues = [
             Math.floor(Math.random() * 6) + 1,
             Math.floor(Math.random() * 6) + 1
         ];
         this.gameState.diceValues = diceValues;
         this.gameState.isRolled = true;
+        if (diceValues[0] === diceValues[1]) {
+            this.gameState.diceValues = [...diceValues, ...diceValues];
+        }
         this.updateGameState();
-        return diceValues;
+        return { success: true, message: "Dice rolled successfully", diceValues: this.gameState.diceValues };
     }
 
     isValidMove(from, to) {
@@ -195,6 +222,7 @@ class GameLogic {
             else if (typeof from === 'number' && typeof to === 'number') {
                 return this.moveBetweenPoints(from, to, movingColor);
             }
+            // Moving from a point on the board to the outside bar  
             else if (typeof from === 'number' && isBearingOff) {
                 return this.bearOff(from, to, movingColor);
             }

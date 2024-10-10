@@ -80,16 +80,16 @@ namespace BackgammonFinalProject.Server.Controllers
             return Ok(gameDtos);
         }
 
-        [HttpPost("StartGame/{gameId}")]
-        public async Task<ActionResult<GameDto>> StartGame(int gameId)
-        {
-            var result = await _gameService.StartGameAsync(gameId);
-            if (!result.Success)
-            {
-                return BadRequest(result.Message);
-            }
-            return Ok(_mappingService.MapGameToDto(result.Game!));
-        }
+        //[HttpPost("StartGame/{gameId}")]
+        //public async Task<ActionResult<GameDto>> StartGame(int gameId)
+        //{
+        //    var result = await _gameService.StartGameAsync(gameId);
+        //    if (!result.Success)
+        //    {
+        //        return BadRequest(result.Message);
+        //    }
+        //    return Ok(_mappingService.MapGameToDto(result.Game!));
+        //}
 
         [HttpPut("UpdateGame/{gameId}")]
         public async Task<ActionResult<GameDto>> UpdateGame(int gameId, [FromBody] GameDto gameDto)

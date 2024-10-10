@@ -14,10 +14,8 @@ namespace BackgammonFinalProject.Server.Services
         {
             var newGame = new Game
             {
-                StartTime = DateTime.UtcNow,
                 Players = [player1],
-                GameStatus = GameStatus.WaitingForPlayers,
-                CurrentTurn = player1.Id
+                GameStatus = GameStatus.WaitingForPlayers
             };
             await _gameRepository.CreateAsync(newGame);
             return newGame;

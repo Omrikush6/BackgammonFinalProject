@@ -11,8 +11,6 @@ const GameBoard = ({ game, onMove, }) => {
   const [selectedBar, setSelectedBar] = useState(null);
 
   const handlePointClick = (index) => {
-    console.log(index);
-    
     if (selectedBar !== null) {
       // If a bar is selected, attempt to move from bar to point
       onMove(selectedBar, index);
