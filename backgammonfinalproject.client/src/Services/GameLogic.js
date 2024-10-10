@@ -91,6 +91,7 @@ class GameLogic {
             const data = await response.json();
             this.initializeGame(data);
             await SignalRService.connect(token, gameId, userId);
+            console.log(this.gameState)
             return this.gameState;
         } catch (error) {
             console.error('Error joining game:', error);
@@ -194,19 +195,135 @@ class GameLogic {
         return { success: true, message: "Dice rolled successfully", diceValues: this.gameState.diceValues };
     }
 
-    isValidMove(from, to) {
-        if (from == to) { 
-            return false
+    isValidMove(from, to,playerId) {
+        debugger;
+        if (from === to) {
+            return false;
         }
+
+        if (this.gameState.currentTurn !== playerId) {
+            console.error('Invalid move: It\'s not your turn');
+            return false;
+        }
+
+        const isFromBar = from === 'barWhite' || from === 'barBlack';
+        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
+        const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
+        const playerColor = this.getPlayerColor(playerId);
+
+        if (movingColor !== playerColor) {
+            console.error('Invalid move: Cannot move opponent\'s checkers');
+            return false;
+        }
+
+        if (!movingColor) {
+            console.error('No checker to move from the specified point.');
+            return false;
+        }
+        const barKey = `bar${playerColor.charAt(0).toUpperCase() + playerColor.slice(1)}`;
+        if (this.gameState[barKey] > 0 && from !== barKey) {
+            console.error('Invalid move: Must move checkers from the bar first');
+            return false;
+        }
+
+        if (isFromBar && typeof to === 'number') {
+            return this.isValidMoveFromBar(from, to, movingColor);
+        } else if (typeof from === 'number' && typeof to === 'number') {
+            return this.isValidMoveBetweenPoints(from, to, movingColor);
+        } else if (typeof from === 'number' && isBearingOff) {
+            return this.isValidBearOff(from, to, movingColor);
+        }
+
+        return false;
+    }
+
+    isValidMoveFromBar(from, to, movingColor) {
+        // Check if the move is to the correct starting quadrant
+        const isValidQuadrant = movingColor === 'white' ? to <= 5 : to >= 18;
+        if (!isValidQuadrant) {
+            console.error('Invalid move from bar: wrong quadrant');
+            return false;
+        }
+
+        // Check if the destination point is available
+        const destPoint = this.gameState.points[to];
+        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
+            console.error('Invalid move from bar: destination occupied by opponent');
+            return false;
+        }
+
+        // Check if the move matches a dice value
+        const moveDistance = movingColor === 'white' ? to + 1 : 24 - to;
+        if (!this.gameState.diceValues.includes(moveDistance)) {
+            console.error('Invalid move from bar: does not match dice value');
+            return false;
+        }
+
         return true;
     }
 
+    isValidMoveBetweenPoints(from, to, movingColor) {
+        // Check if the move is in the correct direction
+        const isValidDirection = movingColor === 'white' ? to > from : to < from;
+        if (!isValidDirection) {
+            console.error('Invalid move: wrong direction');
+            return false;
+        }
 
-    moveChecker(from, to) {
+        // Check if the destination point is available
+        const destPoint = this.gameState.points[to];
+        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
+            console.error('Invalid move: destination occupied by opponent');
+            return false;
+        }
+
+        // Check if the move matches a dice value
+        const moveDistance = Math.abs(to - from);
+        if (!this.gameState.diceValues.includes(moveDistance)) {
+            console.error('Invalid move: does not match dice value');
+            return false;
+        }
+
+        return true;
+    }
+
+    isValidBearOff(from, to, movingColor) {
+        // Check if all checkers are in the home board
+        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
+        const allCheckersInHome = homeBoard.every(point => 
+            this.gameState.points[point].player !== movingColor || this.gameState.points[point].checkers === 0
+        );
+
+        if (!allCheckersInHome) {
+            console.error('Invalid bear off: not all checkers in home board');
+            return false;
+        }
+
+        // Check if the move matches a dice value or is a valid higher dice move
+        const moveDistance = movingColor === 'white' ? 24 - from : from + 1;
+        const highestDice = Math.max(...this.gameState.diceValues);
+        if (!this.gameState.diceValues.includes(moveDistance) && 
+            !(moveDistance < highestDice && this.isHighestCheckerInHomeBoard(from, movingColor))) {
+            console.error('Invalid bear off: does not match dice value');
+            return false;
+        }
+
+        return true;
+    }
+
+    isHighestCheckerInHomeBoard(from, movingColor) {
+        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
+        const higherPoints = movingColor === 'white' ? homeBoard.filter(point => point > from) : homeBoard.filter(point => point < from);
+        return higherPoints.every(point => this.gameState.points[point].checkers === 0);
+    }
+
+
+
+    moveChecker(from, to, playerId) {
         const isFromBar = from === 'barWhite' || from === 'barBlack';
         const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
         
-        if (this.isValidMove(from, to)) {
+        if (this.isValidMove(from, to, playerId)) {
             const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
     
             if (!movingColor) {

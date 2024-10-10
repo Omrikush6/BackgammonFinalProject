@@ -122,7 +122,8 @@ function GameRoom() {
 };
   const handleMove = async (from, to) => {
     try {
-      const updatedGame = await GameLogic.moveChecker(from, to);
+      debugger;
+      const updatedGame = await GameLogic.moveChecker(from, to, parseInt(user.id));
       setGame(prevGame => ({...prevGame, ...updatedGame}));
     } catch (err) {
       handleError('move checker', err);
