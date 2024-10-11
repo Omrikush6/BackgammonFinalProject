@@ -76,7 +76,7 @@ function GameRoom() {
   }, []);
 
   const handleStartGame = async () => {
-    debugger;
+    if (!user) return;
     if (game.gameStatus != '1') {
       handleError('start game', new Error('Game is not ready to start'));
       return;
@@ -122,7 +122,6 @@ function GameRoom() {
 };
   const handleMove = async (from, to) => {
     try {
-      debugger;
       const updatedGame = await GameLogic.moveChecker(from, to, parseInt(user.id));
       setGame(prevGame => ({...prevGame, ...updatedGame}));
     } catch (err) {

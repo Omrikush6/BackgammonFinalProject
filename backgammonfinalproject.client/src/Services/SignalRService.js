@@ -43,6 +43,7 @@ class SignalRService {
 
         await this.connection.invoke("JoinGame", parseInt(gameId), parseInt(userId));
     }
+    //
 
     async disconnect() {
         if (this.connection) {

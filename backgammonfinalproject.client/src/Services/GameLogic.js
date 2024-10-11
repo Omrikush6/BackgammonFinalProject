@@ -125,9 +125,10 @@ class GameLogic {
         };
 
         if (gameData.currentStateJson) {
+            debugger;
             const additionalState = JSON.parse(gameData.currentStateJson);
             Object.assign(this.gameState, additionalState);
-            if(this.gameState.players == null && this.gameState.gameStatus == 2) {
+            if(this.gameState.players == null) {
                 this.initializePlayers();
             }
         }
@@ -196,6 +197,7 @@ class GameLogic {
     }
 
     isValidMove(from, to,playerId) {
+        /*
         debugger;
         if (from === to) {
             return false;
@@ -234,7 +236,8 @@ class GameLogic {
             return this.isValidBearOff(from, to, movingColor);
         }
 
-        return false;
+        return false;*/
+        return true;
     }
 
     isValidMoveFromBar(from, to, movingColor) {
