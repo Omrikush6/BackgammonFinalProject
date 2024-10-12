@@ -14,6 +14,8 @@ function GameRoom() {
   const [game, setGame] = useState(GameLogic.gameState);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [winner, setWinner] = useState(null);
 
 
   useEffect(() => {
@@ -27,9 +29,19 @@ function GameRoom() {
 
     const initializeGame = async () => {
       try {
-        await GameLogic.joinGame(gameId, user.id);
-        setGame({...GameLogic.gameState});
-        setMessages(GameLogic.gameState.messages || []);
+        debugger;
+        const gameState  = await GameLogic.joinGame(gameId, user.id);
+        setGame({...gameState });
+        setMessages(gameState.messages || []);
+        const players = gameState.players;
+        if (players && players.white && players.black) {
+          setWinner(
+            GameLogic.gameState.winnerId === players.white.id ? 'white' : 'black'
+          );
+        } else {
+          setWinner(null);
+        }
+        setGameEnded(gameState.gameStatus == '3');
       } catch (error) {
         handleError('initialize game', error);
       }
@@ -47,8 +59,7 @@ function GameRoom() {
     const handleGameStarted = (updatedGame) => {
       GameLogic.initializeGame(updatedGame);
       setGame({...GameLogic.gameState});
-      alert('started the game')
-      // Add any additional logic needed when the game starts, like enabling game controls
+      console.log('this is the current game state', GameLogic.gameState);
     };
 
     const handleGameUpdated = (updatedGame) => {
@@ -60,10 +71,42 @@ function GameRoom() {
       setMessages(prevMessages => [...prevMessages, message]);
     };
 
+    const handleGameEnded = (gameEndData) => {
+      console.log('Game ended', gameEndData);
+  
+      if (!gameEndData || !gameEndData.currentStateJson) {
+          console.error('Invalid gameEndData received');
+          return;
+      }
+  
+      let finalGameState;
+      try {
+          finalGameState = JSON.parse(gameEndData.currentStateJson);
+      } catch (error) {
+          console.error('Error parsing currentStateJson:', error);
+          return;
+      }
+  
+      setGameEnded(true);
+      let winnerColor;
+      if (finalGameState.players && finalGameState.players.white && finalGameState.players.black) {
+          winnerColor = gameEndData.winnerId === finalGameState.players.white.id ? 'white' : 'black';
+      } else {
+          console.error('Unable to determine winner color');
+          winnerColor = 'unknown';
+      }
+  
+      setWinner(winnerColor);
+      GameLogic.initializeGame(gameEndData);
+      setGame({...GameLogic.gameState});
+      alert(`Game ended. ${winnerColor.charAt(0).toUpperCase() + winnerColor.slice(1)} player won!`);
+  };
+
     SignalRService.setOnGameStarted(handleGameStarted);
     SignalRService.setOnGameUpdated(handleGameUpdated);
     SignalRService.setOnMessageReceived(handleMessageReceived);
     SignalRService.setOnPlayerJoined(handleGameUpdated);
+    SignalRService.setOnGameEnded(handleGameEnded);
     SignalRService.setOnError(setError);
 
     return () => {
@@ -71,6 +114,7 @@ function GameRoom() {
       SignalRService.setOnGameUpdated(null);
       SignalRService.setOnMessageReceived(null);
       SignalRService.setOnPlayerJoined(null);
+      SignalRService.setOnGameEnded(null);
       SignalRService.setOnError(null);
     };
   }, []);
@@ -91,8 +135,11 @@ function GameRoom() {
   };
 
   const handleError = (action, error) => {
-    console.error(`Error ${action}: `, error);
+    //console.error(`Error ${action}: `, error);
     setError(`Failed to ${action}: ${error.message}`);
+    setTimeout(() => {
+      setError(null); // Reset the error message
+    }, 3000);
   };
 
 
@@ -105,6 +152,7 @@ function GameRoom() {
     }
   };
 
+
   const handleRollDice = () => {
     const result = GameLogic.rollDice(user.id);
     if (result.success) {
@@ -114,20 +162,19 @@ function GameRoom() {
             isRolled: true
         }));
     } else {
-        // Handle the error, maybe show a message to the user
-        console.log(result.message);
-        // Optionally, update UI to show an error message
-        // setErrorMessage(result.message);
+        handleError('roll dice', new Error(result.message));
     }
 };
-  const handleMove = async (from, to) => {
-    try {
-      const updatedGame = await GameLogic.moveChecker(from, to, parseInt(user.id));
-      setGame(prevGame => ({...prevGame, ...updatedGame}));
-    } catch (err) {
-      handleError('move checker', err);
+
+  const handleMove = (from, to) => {
+    const result = GameLogic.moveChecker(from, to, parseInt(user.id));
+    if (result.success) {
+      setGame(prevGame => ({...prevGame, ...result.updatedGame}));
+    } else {
+      handleError('move checker', new Error(result.message));
     }
   };
+
 
   if (!game || !user) {
     return <div>Loading...</div>;
@@ -138,7 +185,7 @@ function GameRoom() {
     {error && <div className="error">{error}</div>}
     
     <div className="game-room">
-      
+    {   /* <h1> the game is {gameEnded}</h1>*/}      
       <Game 
         game={game}
         onStartGame={handleStartGame} 
@@ -147,6 +194,12 @@ function GameRoom() {
         onError={handleError}
       />
       <Chat messages={messages} onSendMessage={handleSendMessage} user={user} />
+      {gameEnded && (
+                    <div className="game-end-overlay">
+                        <h2>{winner === 'You' ? 'Congratulations! You won!' : `Game Over. ${winner} won.`}</h2>
+                        <button onClick={() => navigate('/lobby')}>Return to Lobby</button>
+                    </div>
+                )}
     </div>
     </>
   );

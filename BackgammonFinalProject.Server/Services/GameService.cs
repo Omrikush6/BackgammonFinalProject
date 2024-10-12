@@ -1,6 +1,7 @@
 ﻿using BackgammonFinalProject.Server.DTOs;
 using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
+using System.Numerics;
 using System.Text.Json;
 
 namespace BackgammonFinalProject.Server.Services
@@ -63,8 +64,9 @@ namespace BackgammonFinalProject.Server.Services
                 return (false, "Game cannot start without two players.", null);
 
             game.GameStatus = GameStatus.InProgress;
-            game.CurrentTurn = game.Players.Select(p => p.Id).OrderBy(_ => Guid.NewGuid()).First();
-            //game.CurrentStateJson = GenerateInitialGameState();
+            var randomPlayer = game.Players.OrderBy(_ => Guid.NewGuid()).First();
+            game.CurrentTurn = randomPlayer.Id;
+            game.CurrentStateJson = GenerateInitialGameState(game.Players.ToList(), randomPlayer.Id);
             await _gameRepository.UpdateAsync(game);
             return (true, "Game started successfully.", game);
         }
@@ -110,18 +112,73 @@ namespace BackgammonFinalProject.Server.Services
             return (true, "Message added successfully.", message);
         }
 
-        private static string GenerateInitialGameState()
+        private static string GenerateInitialGameState(List<User> players, int startingPlayerId)
         {
-            //THIS WILL BE UPDATED TO MACTH THE GAME
-            // This method should return a JSON string representing the initial game state
-            // For example:
-            return JsonSerializer.Serialize(new
+            var whitePlayer = players.First(p => p.Id == startingPlayerId);
+            var blackPlayer = players.First(p => p.Id != startingPlayerId);
+
+            var initialState = new
             {
-                board = new int[24], // Represents the initial board setup
-                bar = new int[2], // Represents the bar for each player
-                off = new int[2], // Represents the off board for each player
-                dice = new int[0] // Initially empty, will be filled when dice are rolled
-            });
+                points = new[]
+                {
+                    new { player = "white", checkers = 2 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "black", checkers = 5 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "black", checkers = 3 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "white", checkers = 5 },
+                    new { player = "black", checkers = 5 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "white", checkers = 3 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "white", checkers = 5 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = (string)null, checkers = 0 },
+                    new { player = "black", checkers = 2 }
+                },
+                barWhite = 0,
+                barBlack = 0,
+                outsideBarWhite = 0,
+                outsideBarBlack = 0,
+                diceValues = new int[] { 0, 0 },
+                isRolled = false,
+                players = new
+                {
+                    white = new { id = whitePlayer.Id },
+                    black = new { id = blackPlayer.Id }
+                }
+            };
+
+            return JsonSerializer.Serialize(initialState);
+        }
+
+        public async Task<(bool Success, string Message, Game? Game)> EndGameAsync(int gameId, int winnerId)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null);
+
+            game.GameStatus = GameStatus.Completed;
+            game.EndTime = DateTime.UtcNow;
+
+            // Update the final game state
+            var currentState = JsonSerializer.Deserialize<Dictionary<string, object>>(game.CurrentStateJson!);
+            currentState!["gameStatus"] = GameStatus.Completed;
+            currentState["winnerId"] = winnerId;
+            game.CurrentStateJson = JsonSerializer.Serialize(currentState);
+
+            await _gameRepository.UpdateAsync(game);
+            return (true, "Game ended successfully.", game);
         }
 
     }

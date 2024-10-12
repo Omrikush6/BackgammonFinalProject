@@ -30,7 +30,7 @@ class SignalRService {
             if (this.onPlayerJoined) this.onPlayerJoined(updatedGame);
         });
 
-        this.connection.on("JoinGameError", (errorMessage) => {
+        this.connection.on("Error", (errorMessage) => {
             if (this.onError) this.onError(errorMessage);
         });
 
@@ -38,12 +38,18 @@ class SignalRService {
             if (this.onGameStarted) this.onGameStarted(updatedGame);
         });
 
+        this.connection.on("GameEnded", (gameEndData) => {
+            if (this.onGameEnded) this.onGameEnded(gameEndData);
+        });
+
         await this.connection.start();
         console.log("SignalR Connected.");
+        while (this.connection.state !== 'Connected') {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
 
         await this.connection.invoke("JoinGame", parseInt(gameId), parseInt(userId));
     }
-    //
 
     async disconnect() {
         if (this.connection) {
@@ -71,6 +77,17 @@ class SignalRService {
             throw new Error("SignalR connection not established");
         }   
         await this.connection.invoke("UpdateGame",parseInt(gameState.id), gameState);
+    }
+
+    async notifyGameEnd(gameId, winnerId) {
+        if (!this.connection) {
+            throw new Error("SignalR connection not established");
+        }
+        await this.connection.invoke("NotifyGameEnd", gameId, winnerId);
+    }
+
+    setOnGameEnded(callback) {
+        this.onGameEnded = callback;
     }
 
     setOnGameReadyToStart(callback) { // New

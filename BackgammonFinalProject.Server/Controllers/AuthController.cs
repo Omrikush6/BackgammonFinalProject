@@ -79,7 +79,7 @@ namespace BackgammonFinalProject.Server.Controllers
                 issuer: _configuration["jwt:Issuer"],
                 audience: _configuration["jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddMinutes(60),
                 signingCredentials: creds
             );
             var generatedToken = new JwtSecurityTokenHandler().WriteToken(token);

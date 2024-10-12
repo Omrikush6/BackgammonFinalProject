@@ -57,23 +57,6 @@ class GameLogic {
         }
     }
 
-    async fetchAllGames() {
-        const token = localStorage.getItem('token');
-        const response = await fetch('https://localhost:7027/api/Game/AllGames', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-    
-        if (!response.ok) {
-          throw new Error(`Error fetching games: ${response.statusText}`);
-        }
-    
-        return await response.json();
-    }
-
     async joinGame(gameId, userId) {
         try {
             const token = localStorage.getItem('token');
@@ -114,7 +97,7 @@ class GameLogic {
             endTime: gameData.endTime,
             playerIds: gameData.playerIds || [],
             messages: gameData.messages || [],
-            points: gameData.points || this.initializePoints(),
+            points: gameData.points || Array(24).fill({ player: null, checkers: 0 }),
             barWhite: gameData.barWhite || 0,
             barBlack: gameData.barBlack || 0,
             outsideBarWhite: gameData.outSideBar?.checkersP1 || 0,
@@ -125,30 +108,10 @@ class GameLogic {
         };
 
         if (gameData.currentStateJson) {
-            debugger;
             const additionalState = JSON.parse(gameData.currentStateJson);
             Object.assign(this.gameState, additionalState);
-            if(this.gameState.players == null) {
-                this.initializePlayers();
-            }
         }
-
         return this.gameState;
-    }
-
-    initializePlayers() {
-        if (this.gameState.playerIds.length !== 2 || !this.gameState.currentTurn) {
-            console.error('Not enough information to initialize players');
-            return;
-        }
-        this.gameState.players = {
-            white: {
-                id: this.gameState.currentTurn
-            },
-            black: {
-                id:this.gameState.currentTurn === this.gameState.playerIds[0] ? this.gameState.playerIds[1] : this.gameState.playerIds[0]
-            }
-        };
     }
 
     initializePoints() {    
@@ -162,291 +125,13 @@ class GameLogic {
     points[18] = { player: 'white', checkers: 5 };
     points[23] = { player: 'black', checkers: 2 };
     return points;
-}
-    
-
-    selectChecker(pointIndex) {
-        if (this.gameState.points[pointIndex].checkers > 0) {
-            this.selectedChecker = pointIndex;
-            return true;
-        }
-        return false;
     }
 
-    rollDice(userId) {
-
-        if (this.gameState.currentTurn != userId) {
-            return { success: false, message: "It's not your turn", diceValues: this.gameState.diceValues };
-        }
-
-        if (this.gameState.isRolled) {
-            return { success: false, message: "Dice already rolled", diceValues: this.gameState.diceValues };
-        }
-        
-        const diceValues = [
-            Math.floor(Math.random() * 6) + 1,
-            Math.floor(Math.random() * 6) + 1
-        ];
-        this.gameState.diceValues = diceValues;
-        this.gameState.isRolled = true;
-        if (diceValues[0] === diceValues[1]) {
-            this.gameState.diceValues = [...diceValues, ...diceValues];
-        }
-        this.updateGameState();
-        return { success: true, message: "Dice rolled successfully", diceValues: this.gameState.diceValues };
-    }
-
-    isValidMove(from, to,playerId) {
-        /*
-        debugger;
-        if (from === to) {
-            return false;
-        }
-
-        if (this.gameState.currentTurn !== playerId) {
-            console.error('Invalid move: It\'s not your turn');
-            return false;
-        }
-
-        const isFromBar = from === 'barWhite' || from === 'barBlack';
-        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
-        const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
-        const playerColor = this.getPlayerColor(playerId);
-
-        if (movingColor !== playerColor) {
-            console.error('Invalid move: Cannot move opponent\'s checkers');
-            return false;
-        }
-
-        if (!movingColor) {
-            console.error('No checker to move from the specified point.');
-            return false;
-        }
-        const barKey = `bar${playerColor.charAt(0).toUpperCase() + playerColor.slice(1)}`;
-        if (this.gameState[barKey] > 0 && from !== barKey) {
-            console.error('Invalid move: Must move checkers from the bar first');
-            return false;
-        }
-
-        if (isFromBar && typeof to === 'number') {
-            return this.isValidMoveFromBar(from, to, movingColor);
-        } else if (typeof from === 'number' && typeof to === 'number') {
-            return this.isValidMoveBetweenPoints(from, to, movingColor);
-        } else if (typeof from === 'number' && isBearingOff) {
-            return this.isValidBearOff(from, to, movingColor);
-        }
-
-        return false;*/
-        return true;
-    }
-
-    isValidMoveFromBar(from, to, movingColor) {
-        // Check if the move is to the correct starting quadrant
-        const isValidQuadrant = movingColor === 'white' ? to <= 5 : to >= 18;
-        if (!isValidQuadrant) {
-            console.error('Invalid move from bar: wrong quadrant');
-            return false;
-        }
-
-        // Check if the destination point is available
-        const destPoint = this.gameState.points[to];
-        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
-            console.error('Invalid move from bar: destination occupied by opponent');
-            return false;
-        }
-
-        // Check if the move matches a dice value
-        const moveDistance = movingColor === 'white' ? to + 1 : 24 - to;
-        if (!this.gameState.diceValues.includes(moveDistance)) {
-            console.error('Invalid move from bar: does not match dice value');
-            return false;
-        }
-
-        return true;
-    }
-
-    isValidMoveBetweenPoints(from, to, movingColor) {
-        // Check if the move is in the correct direction
-        const isValidDirection = movingColor === 'white' ? to > from : to < from;
-        if (!isValidDirection) {
-            console.error('Invalid move: wrong direction');
-            return false;
-        }
-
-        // Check if the destination point is available
-        const destPoint = this.gameState.points[to];
-        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
-            console.error('Invalid move: destination occupied by opponent');
-            return false;
-        }
-
-        // Check if the move matches a dice value
-        const moveDistance = Math.abs(to - from);
-        if (!this.gameState.diceValues.includes(moveDistance)) {
-            console.error('Invalid move: does not match dice value');
-            return false;
-        }
-
-        return true;
-    }
-
-    isValidBearOff(from, to, movingColor) {
-        // Check if all checkers are in the home board
-        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
-        const allCheckersInHome = homeBoard.every(point => 
-            this.gameState.points[point].player !== movingColor || this.gameState.points[point].checkers === 0
-        );
-
-        if (!allCheckersInHome) {
-            console.error('Invalid bear off: not all checkers in home board');
-            return false;
-        }
-
-        // Check if the move matches a dice value or is a valid higher dice move
-        const moveDistance = movingColor === 'white' ? 24 - from : from + 1;
-        const highestDice = Math.max(...this.gameState.diceValues);
-        if (!this.gameState.diceValues.includes(moveDistance) && 
-            !(moveDistance < highestDice && this.isHighestCheckerInHomeBoard(from, movingColor))) {
-            console.error('Invalid bear off: does not match dice value');
-            return false;
-        }
-
-        return true;
-    }
-
-    isHighestCheckerInHomeBoard(from, movingColor) {
-        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
-        const higherPoints = movingColor === 'white' ? homeBoard.filter(point => point > from) : homeBoard.filter(point => point < from);
-        return higherPoints.every(point => this.gameState.points[point].checkers === 0);
-    }
-
-
-
-    moveChecker(from, to, playerId) {
-        const isFromBar = from === 'barWhite' || from === 'barBlack';
-        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
-        
-        if (this.isValidMove(from, to, playerId)) {
-            const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
-    
-            if (!movingColor) {
-                console.error('No checker to move from the specified point.');
-                return false;
-            }
-    
-            // Moving from the bar to a point on the board
-            if (isFromBar && typeof to === 'number') {
-                return this.moveFromBarToPoint(from, to, movingColor);
-            }
-            // Moving between points on the board
-            else if (typeof from === 'number' && typeof to === 'number') {
-                return this.moveBetweenPoints(from, to, movingColor);
-            }
-            // Moving from a point on the board to the outside bar  
-            else if (typeof from === 'number' && isBearingOff) {
-                return this.bearOff(from, to, movingColor);
-            }
-        } else {
-            console.error('Invalid move');
-            return false;
-        }
-    }
-    
-    // Helper method to handle moving from the bar to a board point
-    moveFromBarToPoint(from, to, movingColor) {
-        const fromBar = from;
-        const toPoint = this.gameState.points[to];
-    
-        if (toPoint.player === null || toPoint.player === movingColor) {
-            // Moving to an empty point or point with the same color
-            this.gameState[fromBar]--;
-            this.gameState.points[to] = {
-                ...toPoint,
-                player: movingColor,
-                checkers: toPoint.checkers + 1
-            };
-            this.updateGameState();
-            return true;
-        } else if (toPoint.player !== movingColor && toPoint.checkers === 1) {
-            // Eating the opponent's checker
-            const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
-            this.gameState[fromBar]--;
-            this.gameState[opponentBar]++;
-            this.gameState.points[to] = {
-                ...toPoint,
-                player: movingColor,
-                checkers: 1
-            };
-            this.updateGameState();
-            return true;
-        }
-    
-        console.error('Invalid move from bar to board.');
-        return false;
-    }
-    
-    // Helper method to handle moving between points on the board
-    moveBetweenPoints(from, to, movingColor) {
-        const fromPoint = this.gameState.points[from];
-        const toPoint = this.gameState.points[to];
-    
-        if (fromPoint.checkers <= 0 || fromPoint.player !== movingColor) {
-            console.error('No checker to move or wrong color.');
-            return false;
-        }
-    
-        if (toPoint.player === null || toPoint.player === movingColor) {
-            // Moving to an empty point or point with the same color
-            this.gameState.points[from] = {
-                ...fromPoint,
-                checkers: fromPoint.checkers - 1,
-                player: fromPoint.checkers === 1 ? null : movingColor
-            };
-            this.gameState.points[to] = {
-                ...toPoint,
-                player: movingColor,
-                checkers: toPoint.checkers + 1
-            };
-            this.updateGameState();
-            return true;
-        } else if (toPoint.player !== movingColor && toPoint.checkers === 1) {
-            // Eating the opponent's checker
-            const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
-            this.gameState[opponentBar]++;
-            this.gameState.points[from] = {
-                ...fromPoint,
-                checkers: fromPoint.checkers - 1,
-                player: fromPoint.checkers === 1 ? null : movingColor
-            };
-            this.gameState.points[to] = {
-                ...toPoint,
-                player: movingColor,
-                checkers: 1
-            };
-            this.updateGameState();
-            return true;
-        }
-    
-        console.error('Invalid move between board points.');
-        return false;
-    }
-
-
-    bearOff(from, to, movingColor) {
-        // Implement bearing off logic here
-        // Remember to check if all checkers are in the home board before allowing bearing off
-    }
-        
-    getCurrentPlayer() {
-        return this.gameState.currentTurn;
-    }
-
-    getPlayerColor(playerId) {
-        return this.gameState.players.white.id === playerId ? 'white' : 'black';
-    }
-    
     updateGameState() {
         SignalRService.updateGameState(this.getGameStateForUpdate());
+        if (this.gameState.gameStatus === 3) {
+            SignalRService.notifyGameEnd(this.gameState.id, this.gameState.winnerId);
+        }
         console.log(this.gameState)
     }
 
@@ -477,6 +162,424 @@ class GameLogic {
                 players: this.gameState.players
             })
         };
+    }
+
+    rollDice(userId) {
+        // Check if it's the player's turn
+        if (this.gameState.currentTurn != userId) {
+            return { success: false, message: "It's not your turn", diceValues: this.gameState.diceValues };
+        }
+    
+        // Check if dice have already been rolled
+        if (this.gameState.isRolled) {
+            return { success: false, message: "Dice already rolled", diceValues: this.gameState.diceValues };
+        }
+
+        if (this.gameState.gameStatus != 2) { // Game has is not in progress 
+            return { success: false, message: 'The game is not in progress' };
+        }
+    
+        // Roll the dice
+        const diceValues = [
+            Math.floor(Math.random() * 6) + 1,
+            Math.floor(Math.random() * 6) + 1
+        ];
+        this.gameState.diceValues = diceValues;
+    
+        // Handle doubles (duplicate dice)
+        if (diceValues[0] === diceValues[1]) {
+            this.gameState.diceValues = [...diceValues, ...diceValues]; // Double the dice values
+        }
+    
+        // Check if the player can make a valid move from the bar
+        const movingColor = this.gameState.currentTurn === this.gameState.players.white.id ? 'white' : 'black';
+        if (!this.checkForPossibleMovesFromBar(movingColor)) {
+            console.log('No possible moves from the bar, ending turn.');
+            this.endTurn(); // End turn automatically if no valid moves are possible
+            return { success: true, message: "No valid moves from the bar, turn skipped", diceValues: this.gameState.diceValues };
+        }
+    
+        // Set the isRolled flag to true and update game state
+        this.gameState.isRolled = true;
+        this.updateGameState();
+        
+        return { success: true, message: "Dice rolled successfully", diceValues: this.gameState.diceValues };
+    }
+
+    checkForPossibleMovesFromBar(movingColor) {
+        const barKey = movingColor === 'white' ? 'barWhite' : 'barBlack';
+        const hasCheckersOnBar = this.gameState[barKey] > 0;
+    
+        if (hasCheckersOnBar) {
+            for (let diceValue of this.gameState.diceValues) {
+                // Calculate target point for bar move based on dice
+                const targetPoint = movingColor === 'white' ? diceValue - 1 : 24 - diceValue;
+                
+                // Check if the move is valid
+                const toPoint = this.gameState.points[targetPoint];
+                if (toPoint.player === null || toPoint.player === movingColor || toPoint.checkers === 1) {
+                    // There's at least one valid move from the bar
+                    return true;
+                }
+            }
+            // No valid moves from bar with current dice
+            return false;
+        }
+    
+        // No checkers on the bar
+        return true;
+    }
+    
+
+    // VALLIDATION METHODS
+
+    isValidMove(from, to, playerId) {
+        if (from === to) {
+            return { success: false, message: 'Cannot move to the same position' };
+        }
+
+        if (this.gameState.currentTurn !== playerId) {
+            return { success: false, message: 'It\'s not your turn' };
+        }
+
+        if (this.gameState.gameStatus != 2) { // Game has is not in progress 
+            return { success: false, message: 'The game is not in progress' };
+        }
+
+        const isFromBar = from === 'barWhite' || from === 'barBlack';
+        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
+        const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
+        const playerColor = this.getPlayerColor(playerId);
+
+        if (movingColor !== playerColor) {
+            return { success: false, message: 'Cannot move opponent\'s checkers' };
+        }
+
+        if (!movingColor) {
+            return { success: false, message: 'No checker to move from the specified point' };
+        }
+
+        const barKey = `bar${playerColor.charAt(0).toUpperCase() + playerColor.slice(1)}`;
+        if (this.gameState[barKey] > 0 && from !== barKey) {
+            return { success: false, message: 'Must move checkers from the bar first' };
+        }
+
+        if (isFromBar && typeof to === 'number') {
+            return this.isValidMoveFromBar(from, to, movingColor);
+        } else if (typeof from === 'number' && typeof to === 'number') {
+            return this.isValidMoveBetweenPoints(from, to, movingColor);
+        } else if (typeof from === 'number' && isBearingOff) {
+            return this.isValidBearOff(from, to, movingColor);
+        }
+
+        return { success: false, message: 'Invalid move' };
+    }
+
+    isValidMoveFromBar(from, to, movingColor) {
+        const isValidQuadrant = movingColor === 'white' ? to <= 5 : to >= 18;
+        if (!isValidQuadrant) {
+            return { success: false, message: 'Invalid move from bar: wrong quadrant' };
+        }
+
+        const destPoint = this.gameState.points[to];
+        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
+            return { success: false, message: 'Invalid move from bar: destination occupied by opponent' };
+        }
+
+        const moveDistance = movingColor === 'white' ? to + 1 : 24 - to;
+        if (!this.gameState.diceValues.includes(moveDistance)) {
+            return { success: false, message: 'Invalid move from bar: does not match dice value' };
+        }
+
+        return { success: true, message: 'Valid move from bar' };
+    }
+
+    isValidMoveBetweenPoints(from, to, movingColor) {
+        const isValidDirection = movingColor === 'white' ? to > from : to < from;
+        if (!isValidDirection) {
+            return { success: false, message: 'Invalid move: wrong direction' };
+        }
+
+        const destPoint = this.gameState.points[to];
+        if (destPoint.player !== movingColor && destPoint.checkers > 1) {
+            return { success: false, message: 'Invalid move: destination occupied by opponent' };
+        }
+
+        const moveDistance = Math.abs(to - from);
+        if (!this.canUseDiceForMove(moveDistance)) {
+            return { success: false, message: 'Invalid move: does not match any dice combination' };
+        }
+
+        return { success: true, message: 'Valid move between points' };
+    }
+
+    canUseDiceForMove(moveDistance) {
+        const { diceValues } = this.gameState;
+    
+        // Helper to check if dice can sum up to the distance
+        const canSumToMove = (target, dice) => {
+            if (target === 0) return true; // If we exactly matched the distance
+            if (dice.length === 0) return false; // No more dice to use
+    
+            // Try using the first dice value and check the rest recursively
+            const [first, ...rest] = dice;
+            if (target >= first && canSumToMove(target - first, rest)) {
+                return true;
+            }
+            
+            // Skip this dice and try with the rest
+            return canSumToMove(target, rest);
+        };
+    
+        if (diceValues.length === 0) {
+            return false;
+        }
+    
+        // Check if the move distance can be made with the current diceValues
+        const diceSet = diceValues.slice(); // Copy the dice array to manipulate
+        return canSumToMove(moveDistance, diceSet);
+    }
+
+    isValidBearOff(from, to, movingColor) {
+        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
+        const allInHomeBoard = this.gameState.points.every((point, index) => {
+            return (homeBoard.includes(index) || point.player !== movingColor || point.checkers === 0);
+        });
+        if (!allInHomeBoard) {
+            return { success: false, message: "Not all checkers are in the home board" };
+        }
+
+        const moveDistance = movingColor === 'white' ? 24 - from : from + 1;
+        const highestDice = Math.max(...this.gameState.diceValues);
+        if (!this.gameState.diceValues.includes(moveDistance) && 
+            !(moveDistance < highestDice && this.isHighestCheckerInHomeBoard(from, movingColor))) {
+            return { success: false, message: 'Invalid bear off: does not match dice value' };
+        }
+
+        return { success: true, message: 'Valid bear off move' };
+    }
+
+    isHighestCheckerInHomeBoard(from, movingColor) {
+        const homeBoard = movingColor === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
+        const higherPoints = movingColor === 'white' ? homeBoard.filter(point => point > from) : homeBoard.filter(point => point < from);
+        return higherPoints.every(point => this.gameState.points[point].checkers === 0);
+    }
+
+    // MOVEMENT METHODS
+
+
+    moveChecker(from, to, playerId) {
+        const validationResult = this.isValidMove(from, to, playerId);
+        if (!validationResult.success) {
+            return validationResult;
+        }
+
+        const isFromBar = from === 'barWhite' || from === 'barBlack';
+        const isBearingOff = to === 'outsideWhite' || to === 'outsideBlack';
+        const movingColor = isFromBar ? (from.toLowerCase().includes('white') ? 'white' : 'black') : this.gameState.points[from]?.player;
+
+        if (!movingColor) {
+            return { success: false, message: 'No checker to move from the specified point' };
+        }
+
+        let moveResult;
+        if (isFromBar && typeof to === 'number') {
+            moveResult = this.moveFromBarToPoint(from, to, movingColor);
+        } else if (typeof from === 'number' && typeof to === 'number') {
+            moveResult = this.moveBetweenPoints(from, to, movingColor);
+        } else if (typeof from === 'number' && isBearingOff) {
+            moveResult = this.bearOff(from, to, movingColor);
+        } else {
+            return { success: false, message: 'Invalid move type' };
+        }
+
+        if (moveResult.success) {
+            if(this.checkWinCondition(movingColor)) {
+                this.gameState.gameStatus = 3;
+                this.gameState.winnerId = this.gameState.players[movingColor].id;
+                this.gameState.endTime = new Date().toISOString();
+
+                moveResult.gameEnded = true;
+                moveResult.message = `${movingColor} has won the game!`;
+            }
+            this.updateGameState();
+        }
+        return moveResult;
+    }
+    
+    // Helper method to handle moving from the bar to a board point
+    moveFromBarToPoint(from, to, movingColor) {
+        const fromBar = from;
+        const toPoint = this.gameState.points[to];
+        const diceValueUsed = movingColor === 'white' ? to + 1 : 24 - to;
+        const diceIndex = this.gameState.diceValues.indexOf(diceValueUsed);
+        if (diceIndex === -1) {
+            return { success: false, message: 'Invalid move: dice value not available' };
+        }
+
+        if (toPoint.player === null || toPoint.player === movingColor) {
+            this.gameState[fromBar]--;
+            this.gameState.points[to] = {
+                ...toPoint,
+                player: movingColor,
+                checkers: toPoint.checkers + 1
+            };
+        } else if (toPoint.player !== movingColor && toPoint.checkers === 1) {
+            const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
+            this.gameState[fromBar]--;
+            this.gameState[opponentBar]++;
+            this.gameState.points[to] = {
+                ...toPoint,
+                player: movingColor,
+                checkers: 1
+            };
+        } else {
+            return { success: false, message: 'Invalid move from bar to board' };
+        }
+
+        this.gameState.diceValues.splice(diceIndex, 1);
+        if (this.gameState.diceValues.length === 0) {
+            this.endTurn();
+        }
+        return { success: true, message: 'Moved checker from bar to point' };
+    }
+
+    // Helper method to handle moving between points on the board
+    moveBetweenPoints(from, to, movingColor) {
+        const fromPoint = this.gameState.points[from];
+        const toPoint = this.gameState.points[to];
+
+        if (fromPoint.checkers <= 0 || fromPoint.player !== movingColor) {
+            return { success: false, message: 'No checker to move or wrong color' };
+        }
+
+        const moveDistance = Math.abs(to - from);
+        if (toPoint.player === null || toPoint.player === movingColor) {
+            this.gameState.points[from] = {
+                ...fromPoint,
+                checkers: fromPoint.checkers - 1,
+                player: fromPoint.checkers === 1 ? null : movingColor
+            };
+            this.gameState.points[to] = {
+                ...toPoint,
+                player: movingColor,
+                checkers: toPoint.checkers + 1
+            };
+        } else if (toPoint.player !== movingColor && toPoint.checkers === 1) {
+            const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
+            this.gameState[opponentBar]++;
+            this.gameState.points[from] = {
+                ...fromPoint,
+                checkers: fromPoint.checkers - 1,
+                player: fromPoint.checkers === 1 ? null : movingColor
+            };
+            this.gameState.points[to] = {
+                ...toPoint,
+                player: movingColor,
+                checkers: 1
+            };
+        } else {
+            return { success: false, message: 'Invalid move between board points' };
+        }
+
+        this.removeUsedDiceForMove(moveDistance);
+        if (this.gameState.diceValues.length === 0) {
+            this.endTurn();
+        }
+        return { success: true, message: 'Moved checker between points' };
+    }
+
+    removeUsedDiceForMove(moveDistance) {
+        const diceValues = [...this.gameState.diceValues];
+        const isDoubles = diceValues.length === 4 && diceValues.every(v => v === diceValues[0]);
+    
+        if (isDoubles) {
+            const singleDieValue = diceValues[0];
+            const usedDiceCount = Math.min(Math.floor(moveDistance / singleDieValue), 4);
+            this.gameState.diceValues = diceValues.slice(usedDiceCount);
+        } else {
+            const remainingDice = diceValues.filter(die => {
+                if (die === moveDistance) {
+                    moveDistance = 0;
+                    return false;
+                }
+                return true;
+            });
+    
+            this.gameState.diceValues = moveDistance === 0 ? remainingDice : [];
+        }
+    
+        return {
+            success: true,
+            message: 'Dice values updated after move',
+            remainingDice: this.gameState.diceValues
+        };
+    }
+
+    bearOff(from, to, movingColor) {
+        const fromPoint = this.gameState.points[from];
+        this.gameState.points[from] = {
+            ...fromPoint,
+            checkers: fromPoint.checkers - 1,
+            player: fromPoint.checkers === 1 ? null : movingColor
+        };
+        const destination = movingColor === 'white' ? 24 : -1;
+        const moveDistance = Math.abs(destination - from);
+        this.removeUsedDiceForMove(moveDistance);
+        if (movingColor === 'white') {
+            this.gameState.outsideBarWhite += 1;
+        } else {
+            this.gameState.outsideBarBlack += 1;
+        }
+        if (this.gameState.diceValues.length === 0) {
+            this.endTurn();
+        }
+        return { success: true, message: 'Beared off checker successfully' };
+    }
+    checkWinCondition(color) {
+        const checkersInPlay = this.gameState.points.reduce((total, point) => {
+            return total + (point.player === color ? point.checkers : 0);
+        }, 0);
+        const checkersOnBar = color === 'white' ? this.gameState.barWhite : this.gameState.barBlack;
+        return checkersInPlay === 0 && checkersOnBar === 0;
+    }
+
+    handleGameEnd(winningColor) {
+        debugger;
+
+        SignalRService.notifyGameEnd(this.gameState.id, winnerId);
+    }
+
+    endTurn() {
+        this.gameState.currentTurn =
+            this.gameState.currentTurn === this.gameState.players.white.id
+                ? this.gameState.players.black.id
+                : this.gameState.players.white.id;
+    
+        // Reset dice values and isRolled flag
+        this.gameState.diceValues = [];
+        this.gameState.isRolled = false;
+    }
+
+    getPlayerColor(playerId) {
+        return this.gameState.players.white.id === playerId ? 'white' : 'black';
+    }
+    
+    async fetchAllGames() {
+        const token = localStorage.getItem('token');
+        const response = await fetch('https://localhost:7027/api/Game/AllGames', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Error fetching games: ${response.statusText}`);
+        }
+    
+        return await response.json();
     }
 }
 
