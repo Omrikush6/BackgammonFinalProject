@@ -19,21 +19,23 @@ function GameRoom() {
   const [turnNotification, setTurnNotification] = useState(null);
 
   useEffect(() => {
-    debugger;
-    if (game && user) {
+    if (game && user && game.players && game.players.white && game.players.black) {
       const isPlayerTurn = game.currentTurn == user.id;
       const playerColor = game.players.white.id == user.id ? 'White' : 'Black';
-
+      const opponentColor = playerColor === 'White' ? 'Black' : 'White';
+      let message;
       if (isPlayerTurn) {
-        setTurnNotification(`It's your turn! You're playing as ${playerColor}.`);
-        // Optionally, set a timeout to clear the notification after a few seconds
-        const timer = setTimeout(() => setTurnNotification(null), 6000);
-        return () => clearTimeout(timer);
+        message = `It's your turn! You're playing as ${playerColor}.`;
       } else {
-        setTurnNotification(null);
+        message = `It's ${opponentColor}'s turn now.`;
       }
+      setTurnNotification(message);
+      const timer = setTimeout(() => setTurnNotification(null), 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setTurnNotification(null);
     }
-  }, [game, user]);
+  }, [game.currentTurn, user]);
 
 
   useEffect(() => {
@@ -187,6 +189,7 @@ function GameRoom() {
     const result = GameLogic.moveChecker(from, to, parseInt(user.id));
     if (result.success) {
       setGame(prevGame => ({...prevGame, ...result.updatedGame}));
+      setTurnNotification(result.message);
     } else {
       handleError('move checker', new Error(result.message));
     }

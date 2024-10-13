@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { UserContext } from '../../App'; // Adjust this import path as needed
+import { UserContext } from '../../App';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 function Profile() {
-  const { user, login } = useContext(UserContext);
+  const { user, login, logout } = useContext(UserContext);
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
-  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,7 +41,6 @@ function Profile() {
     setIsEditing(!isEditing);
     if (!isEditing) {
       setEditedData(profileData);
-      setPassword('');
     }
   };
 
@@ -61,17 +59,12 @@ function Profile() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          userDto: editedData,
-          password: password
-        })
+        body: JSON.stringify(editedData)
       });
       if (!response.ok) throw new Error('Failed to update profile');
       const updatedData = await response.json();
       setProfileData(updatedData);
       setIsEditing(false);
-      setPassword('');
-      login(localStorage.getItem('token'));
       setError('Profile updated successfully');
     } catch (err) {
       setError(err.message);
@@ -80,9 +73,23 @@ function Profile() {
     }
   };
 
-  if (isLoading) return <div className="profile-container"><p>Loading...</p></div>;
-  if (error) return <div className="profile-container"><p className="error-message">{error}</p></div>;
-  if (!profileData) return <div className="profile-container"><p>No profile data available</p></div>;
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        const response = await fetch('https://localhost:7027/api/User/Delete', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (!response.ok) throw new Error('Failed to delete account');
+        logout();
+        navigate('/');
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
 
   return (
     <div className="profile-container">
@@ -90,7 +97,20 @@ function Profile() {
       <p className="profile-description">
         View and update your profile information below.
       </p>
-      {isEditing ? (
+      
+      {isLoading ? (
+        <div>
+          <p>Loading...</p>
+        </div>
+      ) : error ? (
+        <div>
+          <p className="error-message">{error}</p>
+        </div>
+      ) : !profileData ? (
+        <div>
+          <p>No profile data available</p>
+        </div>
+      ) : isEditing ? (
         <form onSubmit={handleSubmit} className="profile-form">
           <input
             type="text"
@@ -111,8 +131,8 @@ function Profile() {
           <input
             type="password"
             name="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={editedData.password || ''}
+            onChange={handleInputChange}
             placeholder="New Password (leave blank to keep current)"
             className="profile-input"
           />
@@ -124,8 +144,11 @@ function Profile() {
           <p><strong>Username:</strong> {profileData.username}</p>
           <p><strong>Email:</strong> {profileData.email}</p>
           <button className="profile-item" onClick={handleEditToggle}>Edit Profile</button>
+          <button className="profile-item delete" onClick={handleDeleteAccount}>Delete Account</button>
         </div>
       )}
+
+      {/* Back to Lobby Button - Always visible */}
       <button className="profile-item ghost" onClick={() => navigate('/lobby')}>
         Back to Lobby
       </button>

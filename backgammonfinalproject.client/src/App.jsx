@@ -23,6 +23,33 @@ function App() {
     return false;
   }, []);
 
+  const refreshToken = useCallback(async () => {
+    try {
+      const response = await fetch('https://localhost:7027/api/Auth/refresh', {
+        method: 'POST',
+        credentials: 'include', // This is important for including cookies
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.Token);
+        const decodedToken = jwtDecode(data.Token);
+        setUser({
+          id: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+          name: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        });
+        setIsLoggedIn(true);
+        return true;
+      } else {
+        throw new Error('Failed to refresh token');
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      logout();
+      return false;
+    }
+  }, []);
+
   const [isLoggedIn, setIsLoggedIn] = useState(() => checkToken());
   const [user, setUser] = useState(null);
 
@@ -51,16 +78,18 @@ function App() {
   }, [checkToken]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const tokenValid = checkToken();
-      setIsLoggedIn(tokenValid);
-      if (!tokenValid) {
+    const interval = setInterval(async() => { 
+      if (!checkToken()) {
+        const refreshed = await refreshToken();
+        if (refreshed) {
         setUser(null);
+        setIsLoggedIn(false);
+        }
       }
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [checkToken]);
+  }, [checkToken, refreshToken]);
 
   const logout = async () => {
     const token = localStorage.getItem('token');

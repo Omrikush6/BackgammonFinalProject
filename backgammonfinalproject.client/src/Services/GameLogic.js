@@ -447,7 +447,6 @@ class GameLogic {
 
     // Helper method to handle moving between points on the board
     moveBetweenPoints(from, to, movingColor) {
-        debugger;
         const fromPoint = this.gameState.points[from];
         const toPoint = this.gameState.points[to];
         const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
@@ -567,12 +566,6 @@ class GameLogic {
         }, 0);
         const checkersOnBar = color === 'white' ? this.gameState.barWhite : this.gameState.barBlack;
         return checkersInPlay === 0 && checkersOnBar === 0;
-    }
-
-    handleGameEnd(winningColor) {
-        debugger;
-
-        SignalRService.notifyGameEnd(this.gameState.id, winnerId);
     }
 
     endTurn() {

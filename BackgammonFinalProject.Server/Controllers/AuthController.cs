@@ -94,5 +94,30 @@ namespace BackgammonFinalProject.Server.Controllers
             Response.Cookies.Delete("JWT");
             return Ok(new { message = "Logged out successfully" });
         }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var token = Request.Cookies["JWT"];
+            if (string.IsNullOrEmpty(token))
+                return BadRequest("No token provided");
+
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            if (jsonToken == null)
+                return BadRequest("Invalid token");
+
+            var username = jsonToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
+            var user = await _userRepository.GetByUsernameAsync(username);
+
+            if (user == null)
+                return BadRequest("User not found");
+
+            var newToken = GenerateJwtToken(user);
+            Response.Cookies.Append("JWT", newToken, new CookieOptions { HttpOnly = true });
+
+            return Ok(new { Token = newToken });
+        }
     }
 }

@@ -42,40 +42,40 @@ namespace BackgammonFinalProject.Server.Controllers
 
         [HttpPut("Update")]
         [Authorize]
-        public async Task<IActionResult> UpdateUser([FromBody] UserDto userDto, string password)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateUserDto)
         {
-            var usernameClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var existingUser = await _userRepository.GetByIdAsync(userId);
 
-            if (usernameClaim == null || userIdClaim == null)
-                return Unauthorized("Unable to retrieve user information from token.");
-
-            var username = usernameClaim.Value;
-            var tokenUserId = int.Parse(userIdClaim.Value);
-
-            if (username != userDto.Username || userDto.Id != tokenUserId)
-                return BadRequest("Token mismatch or invalid user ID.");
-
-
-            var existingUser = await _userRepository.GetByUsernameAsync(username);
             if (existingUser == null)
                 return NotFound("User not found.");
 
-            string hashedPassword = _hashingService.HashPassword(password);
+            if (!string.IsNullOrEmpty(updateUserDto.Username))
+                existingUser.Username = updateUserDto.Username;
 
-            var user = new User
-            {
-                Id = userDto.Id,
-                Username = userDto.Username,
-                Email = userDto.Email,
-                PasswordHash = hashedPassword
-            };
+            if (!string.IsNullOrEmpty(updateUserDto.Email))
+                existingUser.Email = updateUserDto.Email;
 
-            var result = await _userRepository.UpdateAsync(user);
+            if (!string.IsNullOrEmpty(updateUserDto.Password))
+                existingUser.PasswordHash = _hashingService.HashPassword(updateUserDto.Password);
+
+            var result = await _userRepository.UpdateAsync(existingUser);
             if (result)
-                return StatusCode(200, "successfully updated user");
-            return StatusCode(500, "An error occurred while updating the user.");
+                return Ok(_mappingService.MapUserToDto(existingUser));
 
+            return StatusCode(500, "An error occurred while updating the user.");
+        }
+
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> DeleteUser()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var result = await _userRepository.DeleteAsync(userId);
+
+            if (result)
+                return Ok("User deleted successfully");
+             
+            return StatusCode(500, "An error occurred while deleting the user.");
         }
 
         [HttpGet("GetClaims")]

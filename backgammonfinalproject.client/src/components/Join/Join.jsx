@@ -96,7 +96,7 @@ const Join = () => {
   return (
     <div className="join-container">
       <h1 className="join-title">Join Game</h1>
-      <p className="join-description">Welcome to the game joining area</p>
+      <h2 className="join-description">Welcome! Please select a game to join....</h2>
       
       {/* Error and loading states */}
       {loading && <p>Loading games...</p>}
