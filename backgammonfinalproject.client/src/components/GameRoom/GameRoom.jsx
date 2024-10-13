@@ -16,6 +16,24 @@ function GameRoom() {
   const [error, setError] = useState(null);
   const [gameEnded, setGameEnded] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [turnNotification, setTurnNotification] = useState(null);
+
+  useEffect(() => {
+    debugger;
+    if (game && user) {
+      const isPlayerTurn = game.currentTurn == user.id;
+      const playerColor = game.players.white.id == user.id ? 'White' : 'Black';
+
+      if (isPlayerTurn) {
+        setTurnNotification(`It's your turn! You're playing as ${playerColor}.`);
+        // Optionally, set a timeout to clear the notification after a few seconds
+        const timer = setTimeout(() => setTurnNotification(null), 6000);
+        return () => clearTimeout(timer);
+      } else {
+        setTurnNotification(null);
+      }
+    }
+  }, [game, user]);
 
 
   useEffect(() => {
@@ -29,7 +47,6 @@ function GameRoom() {
 
     const initializeGame = async () => {
       try {
-        debugger;
         const gameState  = await GameLogic.joinGame(gameId, user.id);
         setGame({...gameState });
         setMessages(gameState.messages || []);
@@ -183,9 +200,9 @@ function GameRoom() {
   return (
     <>
     {error && <div className="error">{error}</div>}
+    {turnNotification && <div className="turn-notification">{turnNotification}</div>}
     
-    <div className="game-room">
-    {   /* <h1> the game is {gameEnded}</h1>*/}      
+    <div className="game-room">   
       <Game 
         game={game}
         onStartGame={handleStartGame} 

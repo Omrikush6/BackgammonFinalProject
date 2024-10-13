@@ -10,7 +10,7 @@ class GameLogic {
     resetGameState() {
         this.gameState = {
             id: null,
-            gameStatus: 0, // WaitingForPlayers
+            gameStatus: 0, // WaitingForPlayers enum
             currentTurn: null,
             winnerId: null,
             startTime: new Date().toISOString(),
@@ -112,19 +112,6 @@ class GameLogic {
             Object.assign(this.gameState, additionalState);
         }
         return this.gameState;
-    }
-
-    initializePoints() {    
-    const points = Array(24).fill({ player: null, checkers: 0 });
-    points[0] = { player: 'white', checkers: 2 };
-    points[5] = { player: 'black', checkers: 5 };
-    points[7] = { player: 'black', checkers: 3 };
-    points[11] = { player: 'white', checkers: 5 };
-    points[12] = { player: 'black', checkers: 5 };
-    points[16] = { player: 'white', checkers: 3 };
-    points[18] = { player: 'white', checkers: 5 };
-    points[23] = { player: 'black', checkers: 2 };
-    return points;
     }
 
     updateGameState() {
@@ -229,7 +216,6 @@ class GameLogic {
         // No checkers on the bar
         return true;
     }
-    
 
     // VALLIDATION METHODS
 
@@ -272,6 +258,7 @@ class GameLogic {
             return this.isValidBearOff(from, to, movingColor);
         }
 
+
         return { success: false, message: 'Invalid move' };
     }
 
@@ -309,10 +296,18 @@ class GameLogic {
         if (!this.canUseDiceForMove(moveDistance)) {
             return { success: false, message: 'Invalid move: does not match any dice combination' };
         }
-
+        if (!this.gameState.diceValues.includes(moveDistance)) {
+            const intermediatePoints = this.getIntermediatePoints(from, to, movingColor);
+            const allPointsBlocked = intermediatePoints.every(point => {
+                const intermediatePoint = this.gameState.points[point];
+                return intermediatePoint.player !== movingColor && intermediatePoint.checkers > 1;
+            });
+            if (allPointsBlocked) {
+                return { success: false, message: 'Invalid move: all intermediate points are blocked' };
+            }
+        }
         return { success: true, message: 'Valid move between points' };
     }
-
     canUseDiceForMove(moveDistance) {
         const { diceValues } = this.gameState;
     
@@ -402,6 +397,12 @@ class GameLogic {
                 moveResult.gameEnded = true;
                 moveResult.message = `${movingColor} has won the game!`;
             }
+            if (!this.checkForPossibleMovesFromBar(movingColor)) {
+            console.log('No possible moves from the bar, ending turn.');
+            this.endTurn(); // End turn automatically if no valid moves are possible
+            moveResult.message += " No valid moves from the bar, turn skipped.";
+            moveResult.turnEnded = true;
+        }
             this.updateGameState();
         }
         return moveResult;
@@ -446,14 +447,32 @@ class GameLogic {
 
     // Helper method to handle moving between points on the board
     moveBetweenPoints(from, to, movingColor) {
+        debugger;
         const fromPoint = this.gameState.points[from];
         const toPoint = this.gameState.points[to];
+        const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
 
         if (fromPoint.checkers <= 0 || fromPoint.player !== movingColor) {
             return { success: false, message: 'No checker to move or wrong color' };
         }
 
         const moveDistance = Math.abs(to - from);
+
+        const intermediatePoints = this.getIntermediatePoints(from, to, movingColor);
+        let captured = false;  // Track if a capture has already occurred
+
+        intermediatePoints.forEach(intermediatePoint => {
+            if (!captured && this.gameState.points[intermediatePoint].player !== movingColor && this.gameState.points[intermediatePoint].checkers === 1) {
+                this.gameState[opponentBar]++;
+                this.gameState.points[intermediatePoint] = {
+                    ...intermediatePoint,
+                    player: null,
+                    checkers: 0
+                }
+                captured = true;  // Set flag to true after first capture
+            }
+        });
+
         if (toPoint.player === null || toPoint.player === movingColor) {
             this.gameState.points[from] = {
                 ...fromPoint,
@@ -466,7 +485,6 @@ class GameLogic {
                 checkers: toPoint.checkers + 1
             };
         } else if (toPoint.player !== movingColor && toPoint.checkers === 1) {
-            const opponentBar = movingColor === 'white' ? 'barBlack' : 'barWhite';
             this.gameState[opponentBar]++;
             this.gameState.points[from] = {
                 ...fromPoint,
@@ -487,6 +505,13 @@ class GameLogic {
             this.endTurn();
         }
         return { success: true, message: 'Moved checker between points' };
+    }
+
+    getIntermediatePoints(from, to, movingColor) {
+        const distance = Math.abs(to - from);
+        return this.gameState.diceValues
+            .map(dieValue => movingColor === 'white' ? from + dieValue : from - dieValue)
+            .filter(newPoint => Math.abs(newPoint - from) < distance);
     }
 
     removeUsedDiceForMove(moveDistance) {

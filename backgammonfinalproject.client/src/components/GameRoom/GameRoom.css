@@ -67,3 +67,34 @@
   font-size: 2em;
   text-align: center;
 }
+
+.turn-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1000;
+  animation: fadeIn 0.5s, fadeOut 0.5s 7.5s;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.5s, fadeOut 0.5s 7.5s;
+
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}

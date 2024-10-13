@@ -1,6 +1,6 @@
 import React from 'react';
-import { useState } from 'react';
-import GameLogic from '../../Services/GameLogic';
+import { useState, useContext } from 'react';
+import { UserContext } from '../../App';
 import Point from '../Point/Point';
 import Bar from '../Bar/Bar';
 import OutsideBar from '../OutsideBar/OutsideBar';
@@ -9,8 +9,13 @@ import './GameBoard.css';
 const GameBoard = ({ game, onMove, }) => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedBar, setSelectedBar] = useState(null);
+  const { user } = useContext(UserContext);
 
   const handlePointClick = (index) => {
+    debugger;
+    if(game.currentTurn != user.id){
+      return
+    }
     if (selectedBar !== null) {
       // If a bar is selected, attempt to move from bar to point
       onMove(selectedBar, index);
