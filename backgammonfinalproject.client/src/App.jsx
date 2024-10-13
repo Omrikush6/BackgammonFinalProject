@@ -128,10 +128,10 @@ function App() {
       <Routes>
         <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
         <Route path='/lobby' element={isLoggedIn ? <Lobby  /> : <Navigate to='/' />} />
+        <Route path="/Join" element={isLoggedIn ?<Join /> : <Navigate to='/Lobby' /> } />
         <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
         <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/" />} /> 
         <Route path="/contact" element={<Contact />} />
-        <Route path="/Join" element={isLoggedIn ?<Join /> : <Navigate to='/Lobby' /> } />
         <Route path='*' element={<Navigate to={isLoggedIn ? '/Lobby' : '/'} />} />
       </Routes>
       <Footer />

@@ -78,7 +78,6 @@ function GameRoom() {
     const handleGameStarted = (updatedGame) => {
       GameLogic.initializeGame(updatedGame);
       setGame({...GameLogic.gameState});
-      console.log('this is the current game state', GameLogic.gameState);
     };
 
     const handleGameUpdated = (updatedGame) => {
@@ -91,7 +90,6 @@ function GameRoom() {
     };
 
     const handleGameEnded = (gameEndData) => {
-      console.log('Game ended', gameEndData);
   
       if (!gameEndData || !gameEndData.currentStateJson) {
           console.error('Invalid gameEndData received');

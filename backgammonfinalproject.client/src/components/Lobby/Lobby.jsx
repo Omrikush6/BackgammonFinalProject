@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../App';
 import { useContext } from 'react';
@@ -55,7 +55,6 @@ const Lobby = ({ }) => {
   const lobbyItems = [
     { label: 'Start New Game', onClick: startNewGame },
     { label: 'Join Game Room', onClick: () => navigate('/join') },
-    { label: 'Ranking Table', onClick: () => navigate('/rankings') },
     { label: 'My Profile', onClick: () => navigate('/profile') },
     { label: 'Log Out', onClick: handleGoBack, ghost: true },
     { label: 'Contact Us', onClick: () => navigate('/contact') },

@@ -12,14 +12,12 @@ const GameBoard = ({ game, onMove, }) => {
   const { user } = useContext(UserContext);
 
   const handlePointClick = (index) => {
-    debugger;
     if(game.currentTurn != user.id){
       return
     }
     if (selectedBar !== null) {
       // If a bar is selected, attempt to move from bar to point
       onMove(selectedBar, index);
-      console.log(`attempted to move checker from bar to point ${index}`);
       setSelectedBar(null);
     } else if (selectedPoint === null && typeof(index)==='number') {
       // If no point is selected and this point has checkers, select it
