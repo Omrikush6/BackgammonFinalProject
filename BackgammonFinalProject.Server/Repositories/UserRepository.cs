@@ -11,13 +11,18 @@ namespace BackgammonFinalProject.Server.Repositories
     {
         private readonly BackgammonDbContext _context = context;
 
-        public async Task<User?> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
+        public async Task<User?> GetByIdAsync(int id) 
+            => await _context.Users.FindAsync(id);
 
-        public async Task<User?> GetByUsernameAsync(string username) =>
-            await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        public async Task<User?> GetByUsernameAsync(string username)
+            => await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
 
-        public async Task<User?> GetByEmailAsync(string email) =>
-            await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        public async Task<User?> GetByEmailAsync(string email)
+            => await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+
+        public async Task<User?> GetByUsernameOrEmailAsync(string username, string email) => await _context.Users
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower() ||
+                                          u.Email.ToLower() == email.ToLower());
 
         public async Task<User> CreateAsync(User user)
         {
@@ -28,7 +33,7 @@ namespace BackgammonFinalProject.Server.Repositories
 
         public async Task<bool> UpdateAsync(User user)
         {
-            var existingUser = await _context.Users.FindAsync(user.Id);
+            User? existingUser = await _context.Users.FindAsync(user.Id);
             if (existingUser == null)
             {
                 return false;
@@ -46,7 +51,7 @@ namespace BackgammonFinalProject.Server.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            User? user = await _context.Users.FindAsync(id);
             if (user != null)
             {
                 _context.Users.Remove(user);

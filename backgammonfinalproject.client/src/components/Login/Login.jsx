@@ -41,7 +41,6 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
         const url = isSignUp 
             ? 'https://localhost:7027/api/Auth/signup'
             : 'https://localhost:7027/api/Auth/login';
@@ -50,29 +49,30 @@ function Login() {
             ? JSON.stringify({ username, email, password })
             : JSON.stringify({ username, password });
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: body,
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log(isSignUp ? 'Sign Up Success:' : 'Sign In Success:', data);
-                login(data.token)
-                navigate('/lobby')
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || `${isSignUp ? 'Sign Up' : 'Sign In'} Failed. Please try again.`);
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: body,
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(isSignUp ? 'Sign Up Success:' : 'Sign In Success:', data);
+                    login(data.token);
+                    navigate('/lobby');
+                } else {
+                    debugger;
+                    const errorData = await response.text();               
+                    setError(errorData || `${isSignUp ? 'Sign Up' : 'Sign In'} Failed. Please try again.`);
+                }
+            } catch (error) {
+                console.error(`Error during ${isSignUp ? 'Sign Up' : 'Sign In'}:`, error);
+                setError(`An unexpected error occurred. Please try again.`);
             }
-        } catch (error) {
-            console.error(`Error during ${isSignUp ? 'Sign Up' : 'Sign In'}:`, error);
-            setError('An unexpected error occurred. Please try again.');
-        }
     };
 
     return (
@@ -107,7 +107,6 @@ function Login() {
                 <div className="form-container sign-in-container">
                     <form onSubmit={handleSubmit}>
                         <h1>Sign in</h1>
-                        <span>or use your account</span>
                         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
                         <div className="password-container">
                             <input

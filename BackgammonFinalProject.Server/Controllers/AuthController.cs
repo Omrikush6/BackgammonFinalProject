@@ -23,21 +23,22 @@ namespace BackgammonFinalProject.Server.Controllers
         private readonly HashingService _hashingService = hashingService;
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp(UserDto userDto)
+        public async Task<IActionResult> SignUp(SignUpDto signUpDto)
         {
-            var existingUser = await _userRepository.GetByUsernameAsync(userDto.Username);
+            User? existingUser = await _userRepository.GetByUsernameOrEmailAsync(signUpDto.Username, signUpDto.Email);
             if (existingUser != null)
-                return BadRequest("Username already taken.");
-
-            if (string.IsNullOrWhiteSpace(userDto.Email) || !Regex.IsMatch(userDto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-                return BadRequest("Invalid or missing email.");
-
-            var passwordHash = _hashingService.HashPassword(userDto.Password);
-
-            var user = new User
             {
-                Username = userDto.Username,
-                Email = userDto.Email,
+                return existingUser.Username.Equals(signUpDto.Username, StringComparison.OrdinalIgnoreCase)
+                    ? BadRequest("Username already taken.")
+                    : (IActionResult)BadRequest("Email already taken.");
+            }
+
+            string passwordHash = _hashingService.HashPassword(signUpDto.Password);
+
+            User user = new User
+            {
+                Username = signUpDto.Username,
+                Email = signUpDto.Email,
                 PasswordHash = passwordHash,
                 CreatedAt = DateTime.UtcNow
             };
@@ -50,13 +51,13 @@ namespace BackgammonFinalProject.Server.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserDto userDto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var user = await _userRepository.GetByUsernameAsync(userDto.Username);
-            if (user == null || !_hashingService.VerifyPassword(userDto.Password, user.PasswordHash))
+            User? user = await _userRepository.GetByUsernameAsync(loginDto.Username);
+            if (user == null || !_hashingService.VerifyPassword(loginDto.Password, user.PasswordHash))
                 return Unauthorized("Invalid username or password.");
 
-            var token = GenerateJwtToken(user);
+            string token = GenerateJwtToken(user);
 
             Response.Cookies.Append("JWT", token, new CookieOptions { HttpOnly = true });
 

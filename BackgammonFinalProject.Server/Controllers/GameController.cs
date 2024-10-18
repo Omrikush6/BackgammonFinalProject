@@ -64,20 +64,17 @@ namespace BackgammonFinalProject.Server.Controllers
         [HttpGet("{gameId}")]
         public async Task<ActionResult<GameDto>> GetGame(int gameId)
         {
-            var game = await _gameService.GetGameByIdAsync(gameId);
-            if (game == null)
-            {
-                return NotFound("Game not found.");
-            }
-            return Ok(_mappingService.MapGameToDto(game));
+            if (await _gameService.GetGameByIdAsync(gameId) is Game game)
+                return Ok(_mappingService.MapGameToDto(game));
+            return NotFound("Game not found.");
+
         }
 
         [HttpGet("AllGames")]
         public async Task<ActionResult<List<GameDto>>> GetAllGames()
         {
             var games = await _gameService.GetAllGamesAsync();
-            var gameDtos = games.Select(_mappingService.MapGameToDto).ToList();
-            return Ok(gameDtos);
+            return Ok(games.Select(_mappingService.MapGameToDto).ToList());
         }
 
 
