@@ -36,20 +36,16 @@ namespace BackgammonFinalProject.Server.Services
             if (player == null)
                 return (false, "User not found.", null);
 
-            // Check if the player is already in the game
             if (game.Players.Any(p => p.Id == userId))
                 return (true, "Player already in the game.", game);
 
-            // If the game is full, but the player is not in it, reject the join
             if (game.Players.Count >= 2)
                 return (false, "Game is full.", null);
 
             game.Players.Add(player);
 
             if (game.Players.Count == 2)
-            {
                 game.GameStatus = GameStatus.ReadyToStart;
-            }
 
             await _gameRepository.UpdateAsync(game);
             return (true, "Player joined successfully.", game);
@@ -64,9 +60,8 @@ namespace BackgammonFinalProject.Server.Services
                 return (false, "Game cannot start without two players.", null);
 
             game.GameStatus = GameStatus.InProgress;
-            var randomPlayer = game.Players.OrderBy(_ => Guid.NewGuid()).First();
-            game.CurrentTurn = randomPlayer.Id;
-            game.CurrentStateJson = GenerateInitialGameState(game.Players.ToList(), randomPlayer.Id);
+            game.CurrentTurn = game.Players.OrderBy(_ => Guid.NewGuid()).First().Id;
+            game.CurrentStateJson = GenerateInitialGameState(game.Players.ToList(), game.CurrentTurn);
             await _gameRepository.UpdateAsync(game);
             return (true, "Game started successfully.", game);
         }
@@ -171,7 +166,6 @@ namespace BackgammonFinalProject.Server.Services
             game.GameStatus = GameStatus.Completed;
             game.EndTime = DateTime.UtcNow;
 
-            // Update the final game state
             var currentState = JsonSerializer.Deserialize<Dictionary<string, object>>(game.CurrentStateJson!);
             currentState!["gameStatus"] = GameStatus.Completed;
             currentState["winnerId"] = winnerId;
