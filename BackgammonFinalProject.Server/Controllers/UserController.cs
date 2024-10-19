@@ -1,11 +1,8 @@
-﻿using BackgammonFinalProject.Server.Models;
-using BackgammonFinalProject.Server.DTOs;
+﻿using BackgammonFinalProject.Server.DTOs.UserDto.UserDtos;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
 using BackgammonFinalProject.Server.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace BackgammonFinalProject.Server.Controllers
@@ -22,22 +19,14 @@ namespace BackgammonFinalProject.Server.Controllers
         public async Task<IActionResult> GetUser(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mappingService.MapUserToDto(user));
+            return user == null ? NotFound() : Ok(_mappingService.MapUserToDto(user));
         }
 
         [HttpGet("GetUser/{username}")]
         public async Task<IActionResult> GetUserByName(string username)
         {
             var user = await _userRepository.GetByUsernameAsync(username);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mappingService.MapUserToDto(user));
+            return user == null ? NotFound() : Ok(_mappingService.MapUserToDto(user));
         }
 
         [HttpPut("Update")]
@@ -72,10 +61,7 @@ namespace BackgammonFinalProject.Server.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var result = await _userRepository.DeleteAsync(userId);
 
-            if (result)
-                return Ok("User deleted successfully");
-             
-            return StatusCode(500, "An error occurred while deleting the user.");
+            return result ? Ok("User deleted successfully") : (IActionResult)StatusCode(500, "An error occurred while deleting the user.");
         }
 
         [HttpGet("GetClaims")]
@@ -83,9 +69,7 @@ namespace BackgammonFinalProject.Server.Controllers
         public IActionResult GetClaims()
         {
             if (User == null || User.Claims == null || !User.Claims.Any())
-            {
                 return NotFound("No claims found on user object.");
-            }
 
             var claimsList = User.Claims.Select(claim => new
             {

@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BackgammonFinalProject.Server.Models;
+﻿using BackgammonFinalProject.Server.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BackgammonFinalProject.Server.Data
 {
@@ -12,10 +13,19 @@ namespace BackgammonFinalProject.Server.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Player>()
+                 .HasOne(p => p.User)
+                 .WithMany(u => u.Players)
+                 .HasForeignKey(p => p.UserId);
+
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.Game)
+                .WithMany(g => g.Players)
+                .HasForeignKey(p => p.GameId);
+
             modelBuilder.Entity<Game>()
-                .HasMany(g => g.Players)
-                .WithMany(u => u.Games)
-                .UsingEntity(j => j.ToTable("UserGames"));
+                .Property(g => g.PointsJson)
+                .HasColumnType("nvarchar(max)");
         }
     }
 }

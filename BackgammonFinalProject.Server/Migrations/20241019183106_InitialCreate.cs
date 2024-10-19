@@ -17,12 +17,20 @@ namespace BackgammonFinalProject.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    GameState = table.Column<int>(type: "int", nullable: false),
+                    GameStatus = table.Column<int>(type: "int", nullable: false),
                     CurrentTurn = table.Column<int>(type: "int", nullable: false),
                     WinnerId = table.Column<int>(type: "int", nullable: false),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CurrentStateJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    WhitePlayerId = table.Column<int>(type: "int", nullable: true),
+                    BlackPlayerId = table.Column<int>(type: "int", nullable: true),
+                    PointsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BarWhite = table.Column<int>(type: "int", nullable: false),
+                    BarBlack = table.Column<int>(type: "int", nullable: false),
+                    OutsideBarWhite = table.Column<int>(type: "int", nullable: false),
+                    OutsideBarBlack = table.Column<int>(type: "int", nullable: false),
+                    DiceValues = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRolled = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,24 +82,28 @@ namespace BackgammonFinalProject.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserGames",
+                name: "Player",
                 columns: table => new
                 {
-                    GamesId = table.Column<int>(type: "int", nullable: false),
-                    PlayersId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GameId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserGames", x => new { x.GamesId, x.PlayersId });
+                    table.PrimaryKey("PK_Player", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserGames_Games_GamesId",
-                        column: x => x.GamesId,
+                        name: "FK_Player_Games_GameId",
+                        column: x => x.GameId,
                         principalTable: "Games",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserGames_Users_PlayersId",
-                        column: x => x.PlayersId,
+                        name: "FK_Player_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -108,9 +120,14 @@ namespace BackgammonFinalProject.Server.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserGames_PlayersId",
-                table: "UserGames",
-                column: "PlayersId");
+                name: "IX_Player_GameId",
+                table: "Player",
+                column: "GameId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Player_UserId",
+                table: "Player",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -120,7 +137,7 @@ namespace BackgammonFinalProject.Server.Migrations
                 name: "Message");
 
             migrationBuilder.DropTable(
-                name: "UserGames");
+                name: "Player");
 
             migrationBuilder.DropTable(
                 name: "Games");

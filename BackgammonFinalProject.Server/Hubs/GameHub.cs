@@ -1,4 +1,5 @@
 ﻿using BackgammonFinalProject.Server.DTOs;
+using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -66,6 +67,42 @@ namespace BackgammonFinalProject.Server.Hubs
                 if (Success)
                 {
                     await Clients.Group(gameId.ToString()).SendAsync("MessageReceived", _mappingService.MapMessageToDto(message!));
+                }
+                else
+                {
+                    throw new HubException(Message);
+                }
+            });
+        }
+
+        public async Task RollDice(int gameId, int playerId)
+        {
+            await HandleRequest(async () =>
+            {
+                var (Success, Message, Game) = await _gameService.RollDiceAsync(gameId, playerId);
+                if (Success)
+                {
+                    await Clients.Group(gameId.ToString()).SendAsync("DiceRolled", _mappingService.MapGameToDto(Game!));
+                }
+                else
+                {
+                    throw new HubException(Message);
+                }
+            });
+        }
+
+        public async Task MoveChecker(int gameId, int playerId, string from, string to)
+        {
+            await HandleRequest(async () =>
+            {
+                var (Success, Message, Game) = await _gameService.MoveCheckerAsync(gameId, playerId, from, to);
+                if (Success)
+                {
+                    await Clients.Group(gameId.ToString()).SendAsync("GameUpdated", _mappingService.MapGameToDto(Game!));
+                    if (Game!.GameStatus == GameStatus.Completed)
+                    {
+                        await Clients.Group(gameId.ToString()).SendAsync("GameEnded", _mappingService.MapGameToDto(Game));
+                    }
                 }
                 else
                 {

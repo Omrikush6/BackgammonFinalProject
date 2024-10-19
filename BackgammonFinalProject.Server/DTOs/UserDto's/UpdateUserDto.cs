@@ -1,4 +1,4 @@
-﻿namespace BackgammonFinalProject.Server.DTOs
+﻿namespace BackgammonFinalProject.Server.DTOs.UserDto.UserDtos
 {
     public class UpdateUserDto
     {

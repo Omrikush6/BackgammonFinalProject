@@ -50,7 +50,7 @@ function GameRoom() {
     const initializeGame = async () => {
       try {
         const gameState  = await GameLogic.joinGame(gameId, user.id);
-        setGame({...gameState });
+        setGame({...gameState});
         setMessages(gameState.messages || []);
         const players = gameState.players;
         if (players && players.white && players.black) {

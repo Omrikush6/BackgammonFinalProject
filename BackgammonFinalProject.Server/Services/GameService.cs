@@ -6,20 +6,29 @@ using System.Text.Json;
 
 namespace BackgammonFinalProject.Server.Services
 {
-    public class GameService(IGameRepository gameRepository, IUserRepository userRepository)
+    public class GameService(IGameRepository gameRepository, IUserRepository userRepository, GameLogic gamelogic)
     {
         private readonly IGameRepository _gameRepository = gameRepository;
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly GameLogic _gameLogic = gamelogic;
 
-        public async Task<Game> CreateGameAsync(User player1)
+        public async Task<Game> CreateGameAsync(User user)
         {
-            var newGame = new Game
+            var game = new Game
             {
-                Players = [player1],
+                Players =
+                [
+                    new() {
+                        User = user,
+                        Color = null,
+                        UserId = user.Id,
+                        Name = user.Username  
+                    }
+                ],
                 GameStatus = GameStatus.WaitingForPlayers
             };
-            await _gameRepository.CreateAsync(newGame);
-            return newGame;
+            await _gameRepository.CreateAsync(game);
+            return game;
         }
 
         public async Task<Game?> GetGameByIdAsync(int gameId) => await _gameRepository.GetByIdAsync(gameId);
@@ -28,22 +37,21 @@ namespace BackgammonFinalProject.Server.Services
 
         public async Task<(bool Success, string Message, Game? Game)> JoinGameAsync(int gameId, int userId)
         {
-            var game = await _gameRepository.GetByIdAsync(gameId);
+            Game? game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
                 return (false, "Game not found.", null);
 
-            var player = await _userRepository.GetByIdAsync(userId);
-            if (player == null)
+            User? user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
                 return (false, "User not found.", null);
 
-            if (game.Players.Any(p => p.Id == userId))
+            if (game.Players.Any(p => p.UserId == userId))
                 return (true, "Player already in the game.", game);
 
             if (game.Players.Count >= 2)
                 return (false, "Game is full.", null);
 
-            game.Players.Add(player);
-
+            game.Players.Add(new Player{User = user,Color = null,UserId = user.Id,Name = user.Username});
             if (game.Players.Count == 2)
                 game.GameStatus = GameStatus.ReadyToStart;
 
@@ -53,15 +61,12 @@ namespace BackgammonFinalProject.Server.Services
 
         public async Task<(bool Success, string Message, Game? Game)> StartGameAsync(int gameId)
         {
-            var game = await _gameRepository.GetByIdAsync(gameId);
+            Game? game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
                 return (false, "Game not found.", null);
             if (game.Players.Count != 2)
                 return (false, "Game cannot start without two players.", null);
-
-            game.GameStatus = GameStatus.InProgress;
-            game.CurrentTurn = game.Players.OrderBy(_ => Guid.NewGuid()).First().Id;
-            game.CurrentStateJson = GenerateInitialGameState(game.Players.ToList(), game.CurrentTurn);
+            _gameLogic.InitializeGame(game);
             await _gameRepository.UpdateAsync(game);
             return (true, "Game started successfully.", game);
         }
@@ -73,18 +78,50 @@ namespace BackgammonFinalProject.Server.Services
                 return (false, "Game not found.", null);
 
             game.CurrentTurn = gameDto.CurrentTurn;
-            game.CurrentStateJson = gameDto.CurrentStateJson;
+            game.DiceValues = gameDto.DiceValues;
+            game.Points = gameDto.Points;
+            game.BarBlack = gameDto.BarBlack;
+            game.BarWhite = gameDto.BarWhite;
+            game.OutsideBarWhite = gameDto.OutsideBarWhite;
+            game.OutsideBarBlack = gameDto.OutsideBarBlack;
             game.GameStatus = gameDto.GameStatus;
-
-            if (gameDto.GameStatus == GameStatus.Completed)
-            {
-                game.WinnerId = (int)gameDto.WinnerId!;
-                game.EndTime = DateTime.UtcNow;
-            }
 
             await _gameRepository.UpdateAsync(game);
             return (true, "Game updated successfully.", game);
         }
+
+        public async Task<(bool Success, string Message, Game? Game)> RollDiceAsync(int gameId, int userId)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null);
+
+            var (Success, Message) = _gameLogic.RollDice(game, userId);
+
+            if (Success)
+            {
+                await _gameRepository.UpdateAsync(game);
+            }
+
+            return (Success, Message, game);
+        }
+
+        public async Task<(bool Success, string Message, Game? Game)> MoveCheckerAsync(int gameId, int userId, string from, string to)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null);
+
+            var (Success, Message) = _gameLogic.MoveChecker(game, userId, from, to);
+
+            if (Success)
+            {
+                await _gameRepository.UpdateAsync(game);
+            }
+
+            return (Success, Message, game);
+        }
+
 
         public async Task<(bool Success, string Message, Message? message)> AddMessageAsync(int gameId, int playerId, string messageContent)
         {
@@ -92,69 +129,19 @@ namespace BackgammonFinalProject.Server.Services
             if (game == null)
                 return (false, "Game not found.", null);
 
-            var player = game.Players.FirstOrDefault(p => p.Id == playerId);
-            if (player == null)
-                return (false, "Player not found in game.", null);
+            var user = await _userRepository.GetByIdAsync(playerId);
+            if (user == null)
+                return (false, "User not found.", null);
 
             var message = new Message
             {
                 Content = messageContent,
                 Timestamp = DateTime.UtcNow,
-                Sender = player
+                Sender = user
             };
             game.Messages.Add(message);
             await _gameRepository.UpdateAsync(game);
             return (true, "Message added successfully.", message);
-        }
-
-        private static string GenerateInitialGameState(List<User> players, int startingPlayerId)
-        {
-            var whitePlayer = players.First(p => p.Id == startingPlayerId);
-            var blackPlayer = players.First(p => p.Id != startingPlayerId);
-
-            var initialState = new
-            {
-                points = new[]
-                {
-                    new { player = "white", checkers = 2 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "black", checkers = 5 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "black", checkers = 3 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "white", checkers = 5 },
-                    new { player = "black", checkers = 5 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "white", checkers = 3 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "white", checkers = 5 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = (string)null, checkers = 0 },
-                    new { player = "black", checkers = 2 }
-                },
-                barWhite = 0,
-                barBlack = 0,
-                outsideBarWhite = 0,
-                outsideBarBlack = 0,
-                diceValues = new int[] { 0, 0 },
-                isRolled = false,
-                players = new
-                {
-                    white = new { id = whitePlayer.Id },
-                    black = new { id = blackPlayer.Id }
-                }
-            };
-
-            return JsonSerializer.Serialize(initialState);
         }
 
         public async Task<(bool Success, string Message, Game? Game)> EndGameAsync(int gameId, int winnerId)
@@ -162,15 +149,9 @@ namespace BackgammonFinalProject.Server.Services
             var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
                 return (false, "Game not found.", null);
-
             game.GameStatus = GameStatus.Completed;
             game.EndTime = DateTime.UtcNow;
-
-            var currentState = JsonSerializer.Deserialize<Dictionary<string, object>>(game.CurrentStateJson!);
-            currentState!["gameStatus"] = GameStatus.Completed;
-            currentState["winnerId"] = winnerId;
-            game.CurrentStateJson = JsonSerializer.Serialize(currentState);
-
+            game.WinnerId = winnerId;
             await _gameRepository.UpdateAsync(game);
             return (true, "Game ended successfully.", game);
         }

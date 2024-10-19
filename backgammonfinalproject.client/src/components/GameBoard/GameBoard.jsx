@@ -54,7 +54,6 @@ const GameBoard = ({ game, onMove, }) => {
         console.warn(`Invalid point index: ${i}`);
         continue;
       }
-
       points.push(
         <Point 
           key={i} 

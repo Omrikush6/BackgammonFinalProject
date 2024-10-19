@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using BackgammonFinalProject.Server.Repositories;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using BackgammonFinalProject.Server.DTOs;
 using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
 using BackgammonFinalProject.Server.Services;
+using BackgammonFinalProject.Server.DTOs.UserDtos;
 
 namespace BackgammonFinalProject.Server.Controllers
 {
@@ -35,7 +35,7 @@ namespace BackgammonFinalProject.Server.Controllers
 
             string passwordHash = _hashingService.HashPassword(signUpDto.Password);
 
-            User user = new User
+            User user = new()
             {
                 Username = signUpDto.Username,
                 Email = signUpDto.Email,
@@ -103,8 +103,8 @@ namespace BackgammonFinalProject.Server.Controllers
             if (string.IsNullOrEmpty(token))
                 return BadRequest("No token provided");
 
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+            JwtSecurityTokenHandler handler = new();
+            JwtSecurityToken? jsonToken = handler.ReadToken(token) as JwtSecurityToken;
 
             if (jsonToken == null)
                 return BadRequest("Invalid token");

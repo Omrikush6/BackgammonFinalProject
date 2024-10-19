@@ -19,6 +19,6 @@ namespace BackgammonFinalProject.Server.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<Game> Games { get; set; } = [];
+        public List<Player> Players { get; set; } = [];
     }
 }

@@ -32,7 +32,7 @@ const useGames = () => {
 
 
 
-const Join = () => {
+  const Join = () => {
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
     const { games, loading, error, refetchGames } = useGames();
@@ -41,87 +41,68 @@ const Join = () => {
     const handleJoinGame = async (gameId) => {
         setJoinError(null);
         try {
-          await GameLogic.joinGame(gameId, user.id);
-          navigate(`/game/${gameId}`);
+            await GameLogic.joinGame(gameId, user.id);
+            navigate(`/game/${gameId}`);
         } catch (error) {
-          console.error(error);
-          setJoinError(error.message);
+            console.error(error);
+            setJoinError(error.message);
         }
-      };
+    };
 
-      const getGameButtonProps = useCallback((game) => {
-        const isUserInGame = game.playerIds.includes(parseInt(user.id));
-        const isGameFull = game.playerIds.length === 2;
-        
-        let buttonClass = "game-item";
-        if (isUserInGame) {
-          buttonClass += " bold";
-        } else if (isGameFull) {
-          buttonClass += " ghost";
-        }
-    
-        return {
-          className: buttonClass,
-          disabled: isGameFull && !isUserInGame,
-          onClick: () => isUserInGame ? navigate(`/game/${game.id}`) : handleJoinGame(game.id)
-        };
-      }, [user, navigate, handleJoinGame]);
-
-    const renderGameItem = (game) => {
-    const buttonProps = getGameButtonProps(game);
-    const isUserInGame = game.playerIds.includes(user.id);
+    const sortedGames = useMemo(() => {
+        return [...games].sort((a, b) => {
+            const userInA = a.players.some(player => player.id == user.id);
+            const userInB = b.players.some(player => player.id == user.id);
+            if (userInA && !userInB) return -1;
+            if (!userInA && userInB) return 1;
+            return (2 - a.players.length) - (2 - b.players.length);
+        });
+    }, [games, user]);
 
     return (
-      <button key={game.id} {...buttonProps}>
-        Game ID: {game.id}
-        <br />
-        Players: {game.playerIds.length}/2
-        {isUserInGame && <span className="user-in-game"> (You're in this game)</span>}
-        {game.playerIds.length === 2 && !isUserInGame && <span className="game-full"> (Full)</span>}
-      </button>
+        <div className="join-container">
+            <h1 className="join-title">Join Game</h1>
+            <h2 className="join-description">Welcome! Please select a game to join....</h2>
+            
+            {loading && <p>Loading games...</p>}
+            {error && <p className="error-message">Error loading games: {error}</p>}
+            {joinError && <p className="error-message">Error joining game: {joinError}</p>}
+
+            <div className="game-list">
+                <h2>Available Games:</h2>
+                {sortedGames.length > 0 ? (
+                    sortedGames.map(game => {
+                        const isUserInGame = game.players.some(player => player.id == user.id);
+                        const isGameFull = game.players.length === 2;
+                        
+                        return (
+                            <button 
+                                key={game.id} 
+                                className={`game-item ${isUserInGame ? 'bold' : ''} ${isGameFull && !isUserInGame ? 'ghost' : ''}`}
+                                disabled={isGameFull && !isUserInGame}
+                                onClick={() => isUserInGame ? navigate(`/game/${game.id}`) : handleJoinGame(game.id)}
+                            >
+                                Game ID: {game.id}
+                                <br />
+                                Players: {game.players.length}/2
+                                {isUserInGame && <span className="user-in-game"> (You're in this game)</span>}
+                                {isGameFull && !isUserInGame && <span className="game-full"> (Full)</span>}
+                            </button>
+                        );
+                    })
+                ) : (
+                    <p>No games available. Why not create one?</p>
+                )}
+            </div>
+
+            <button className="join-item ghost" onClick={() => navigate('/lobby')}>
+                Back to Lobby
+            </button>
+            <button className="join-item" onClick={refetchGames}>
+                Refresh Games
+            </button>
+        </div>
     );
-  };
-
-  const sortedGames = useMemo(() => {
-    return [...games].sort((a, b) => {
-      const userInA = a.playerIds.includes(user.id);
-      const userInB = b.playerIds.includes(user.id);
-      if (userInA && !userInB) return -1;
-      if (!userInA && userInB) return 1;
-      return (2 - a.playerIds.length) - (2 - b.playerIds.length);
-    });
-  }, [games, user]);
-
-
-  return (
-    <div className="join-container">
-      <h1 className="join-title">Join Game</h1>
-      <h2 className="join-description">Welcome! Please select a game to join....</h2>
-      
-      {/* Error and loading states */}
-      {loading && <p>Loading games...</p>}
-      {error && <p className="error-message">Error loading games: {error}</p>}
-      {joinError && <p className="error-message">Error joining game: {joinError}</p>}
-
-      {/* Game list */}
-      <div className="game-list">
-        <h2>Available Games:</h2>
-        {sortedGames.length > 0 ? (
-          sortedGames.map(renderGameItem)
-        ) : (
-          <p>No games available. Why not create one?</p>
-        )}
-      </div>
-
-      {/* Navigation buttons */}
-      <button className="join-item ghost" onClick={() => navigate('/lobby')}>
-        Back to Lobby
-      </button>
-      <button className="join-item" onClick={refetchGames}>
-        Refresh Games
-      </button>
-    </div>
-  );
 };
-    
+
 export default Join;

@@ -15,19 +15,15 @@ class GameLogic {
             winnerId: null,
             startTime: new Date().toISOString(),
             endTime: null,
-            playerIds: [],
+            players: [],
             messages: [],
-            points: Array(24).fill({ player: null, checkers: 0 }),
+            points: Array(24).fill({ playerColor: null, checkers: 0 }),
             barWhite: 0,
             barBlack: 0,
             outsideBarWhite: 0,
             outsideBarBlack: 0,
             diceValues: [0, 0],
             isRolled: false,
-            players : {
-                white: {id: null},
-                black: {id: null}
-            }
         };
     }
 
@@ -87,7 +83,7 @@ class GameLogic {
             console.error('Game data is undefined');
             return this.gameState;
         }
-
+        debugger;
         this.gameState = {
             id: gameData.id,
             gameStatus: gameData.gameStatus,
@@ -95,22 +91,17 @@ class GameLogic {
             winnerId: gameData.winnerId,
             startTime: gameData.startTime,
             endTime: gameData.endTime,
-            playerIds: gameData.playerIds || [],
+            players: gameData.players || [],
             messages: gameData.messages || [],
-            points: gameData.points || Array(24).fill({ player: null, checkers: 0 }),
+            points: gameData.points || Array(24).fill({ playerColor: null, checkers: 0 }),
             barWhite: gameData.barWhite || 0,
             barBlack: gameData.barBlack || 0,
-            outsideBarWhite: gameData.outSideBar?.checkersP1 || 0,
-            outsideBarBlack: gameData.outSideBar?.checkersP2 || 0,
+            outsideBarWhite: gameData.outsideBarWhite || 0,
+            outsideBarBlack: gameData.outsideBarBlack || 0,
             diceValues: gameData.diceValues || [0, 0],
-            isRolled: gameData.isRolled || false,
-            players: gameData.players
+            isRolled: gameData.isRolled || false
         };
 
-        if (gameData.currentStateJson) {
-            const additionalState = JSON.parse(gameData.currentStateJson);
-            Object.assign(this.gameState, additionalState);
-        }
         return this.gameState;
     }
 
@@ -130,7 +121,7 @@ class GameLogic {
             winnerId: this.gameState.winnerId,
             startTime: this.gameState.startTime,
             endTime: this.gameState.endTime,
-            playerIds: this.gameState.playerIds,
+            players: this.gameState.players,
             messages: this.gameState.messages.map(message => ({
                 id: message.id,
                 content: message.content,
@@ -138,16 +129,13 @@ class GameLogic {
                 senderId: message.senderId,
                 senderName: message.senderName
             })),
-            currentStateJson: JSON.stringify({
-                points: this.gameState.points,
-                barWhite: this.gameState.barWhite,
-                barBlack: this.gameState.barBlack,
-                outsideBarWhite: this.gameState.outsideBarWhite,
-                outsideBarBlack: this.gameState.outsideBarBlack,
-                diceValues: this.gameState.diceValues,
-                isRolled: this.gameState.isRolled,
-                players: this.gameState.players
-            })
+            points: JSON.stringify(this.gameState.points),
+            barWhite: this.gameState.barWhite,
+            barBlack: this.gameState.barBlack,
+            outsideBarWhite: this.gameState.outsideBarWhite,
+            outsideBarBlack: this.gameState.outsideBarBlack,
+            diceValues: this.gameState.diceValues,
+            isRolled: this.gameState.isRolled
         };
     }
 
@@ -580,7 +568,8 @@ class GameLogic {
     }
 
     getPlayerColor(playerId) {
-        return this.gameState.players.white.id === playerId ? 'white' : 'black';
+        const player = this.gameState.players.find(p => p.id === playerId);
+        return player ? player.playercolor : null;
     }
     
     async fetchAllGames() {

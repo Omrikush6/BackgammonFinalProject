@@ -1,16 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BackgammonFinalProject.Server.DTOs
+namespace BackgammonFinalProject.Server.DTOs.UserDtos
 {
-    public class SignUpDto
+    public class LoginDto
     {
         [Required]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters.")]
-        public string Username { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
-        public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Password)]
