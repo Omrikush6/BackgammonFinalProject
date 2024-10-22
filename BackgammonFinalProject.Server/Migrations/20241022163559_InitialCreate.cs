@@ -18,9 +18,10 @@ namespace BackgammonFinalProject.Server.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GameStatus = table.Column<int>(type: "int", nullable: false),
-                    CurrentTurn = table.Column<int>(type: "int", nullable: false),
-                    WinnerId = table.Column<int>(type: "int", nullable: false),
-                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CurrentTurn = table.Column<int>(type: "int", nullable: true),
+                    WinnerId = table.Column<int>(type: "int", nullable: true),
+                    DrawOfferedBy = table.Column<int>(type: "int", nullable: true),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     WhitePlayerId = table.Column<int>(type: "int", nullable: true),
                     BlackPlayerId = table.Column<int>(type: "int", nullable: true),
@@ -82,28 +83,24 @@ namespace BackgammonFinalProject.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Player",
+                name: "UserGames",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GameId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    GamesId = table.Column<int>(type: "int", nullable: false),
+                    PlayersId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Player", x => x.Id);
+                    table.PrimaryKey("PK_UserGames", x => new { x.GamesId, x.PlayersId });
                     table.ForeignKey(
-                        name: "FK_Player_Games_GameId",
-                        column: x => x.GameId,
+                        name: "FK_UserGames_Games_GamesId",
+                        column: x => x.GamesId,
                         principalTable: "Games",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Player_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_UserGames_Users_PlayersId",
+                        column: x => x.PlayersId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -120,14 +117,9 @@ namespace BackgammonFinalProject.Server.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Player_GameId",
-                table: "Player",
-                column: "GameId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Player_UserId",
-                table: "Player",
-                column: "UserId");
+                name: "IX_UserGames_PlayersId",
+                table: "UserGames",
+                column: "PlayersId");
         }
 
         /// <inheritdoc />
@@ -137,7 +129,7 @@ namespace BackgammonFinalProject.Server.Migrations
                 name: "Message");
 
             migrationBuilder.DropTable(
-                name: "Player");
+                name: "UserGames");
 
             migrationBuilder.DropTable(
                 name: "Games");

@@ -31,7 +31,7 @@ namespace BackgammonFinalProject.Server.Controllers
                     return NotFound($"User with ID {playerId} not found.");
 
                 var newGame = await _gameService.CreateGameAsync(player);
-                return Ok(_mappingService.MapGameToDto(newGame));
+                return Ok(newGame.Id);
             }
             catch (Exception ex)
             {
@@ -42,17 +42,22 @@ namespace BackgammonFinalProject.Server.Controllers
         [HttpPost("JoinGame/{gameId}")]
         public async Task<ActionResult<GameDto>> JoinGame(int gameId)
         {
-            var playerId = (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value) as string;
-            if (string.IsNullOrEmpty(playerId))
-                return Unauthorized("User not authenticated or user ID not found.");
+            try
+            {
+                var playerId = (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value) as string;
+                if (string.IsNullOrEmpty(playerId))
+                    return Unauthorized("User not authenticated or user ID not found.");
 
 
-            var userId = int.Parse(playerId);
-            var result = await _gameService.JoinGameAsync(gameId, userId);
-            if (!result.Success)
-                return BadRequest(result.Message);
+                var userId = int.Parse(playerId);
+                var result = await _gameService.JoinGameAsync(gameId, userId);
+                return Ok(result.Game!.Id);
 
-            return Ok(_mappingService.MapGameToDto(result.Game!));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error creating game: {ex.Message}");
+            }
         }
 
         [HttpGet("{gameId}")]
@@ -69,20 +74,6 @@ namespace BackgammonFinalProject.Server.Controllers
         {
             var games = await _gameService.GetAllGamesAsync();
             return Ok(games.Select(_mappingService.MapGameToDto).ToList());
-        }
-
-
-        [HttpPut("UpdateGame/{gameId}")]
-        public async Task<ActionResult<GameDto>> UpdateGame(int gameId, [FromBody] GameDto gameDto)
-        {
-            if (gameId != gameDto.Id)
-                return BadRequest("Game ID mismatch");
-
-            var result = await _gameService.UpdateGameAsync(gameId, gameDto);
-            if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(_mappingService.MapGameToDto(result.Game!));
         }
     }
 }

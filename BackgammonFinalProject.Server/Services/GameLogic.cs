@@ -10,7 +10,6 @@ namespace BackgammonFinalProject.Server.Services
 
         public void InitializeGame(Game game)
         {
-            game.Points = Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray();
             game.Points[0] = new Point { PlayerColor = "white", Checkers = 2 };
             game.Points[5] = new Point { PlayerColor = "black", Checkers = 5 };
             game.Points[7] = new Point { PlayerColor = "black", Checkers = 3 };

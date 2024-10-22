@@ -22,6 +22,9 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<HashingService>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<MappingService>();
+builder.Services.AddScoped<GameLogic>();
+builder.Services.AddScoped<GameLogicValidations>();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

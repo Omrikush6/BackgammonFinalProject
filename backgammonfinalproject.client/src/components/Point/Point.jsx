@@ -5,7 +5,6 @@ import './Point.css';
 const Point = ({ index, checkers, isTop, isSelected, onClick }) => {
 const isEven = index % 2 === 0;
 const color = isEven ? 'dark' : 'light';
-console.log(checkers);
 return (
   <div 
   className={`point ${color} ${isTop ? 'top' : 'bottom'} 

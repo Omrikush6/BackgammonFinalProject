@@ -43,7 +43,7 @@ const Lobby = ({ }) => {
       if (response.ok) {
         const data = await response.json();
         console.log('New game started:', data);
-        navigate(`/game/${data.id}`);
+        navigate(`/game/${data}`);
       } else {
         console.error('Failed to start new game:', response.statusText);
       }

@@ -39,12 +39,15 @@ namespace BackgammonFinalProject.Server.Migrations
                     b.Property<int?>("BlackPlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CurrentTurn")
+                    b.Property<int?>("CurrentTurn")
                         .HasColumnType("int");
 
                     b.Property<string>("DiceValues")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DrawOfferedBy")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
@@ -65,13 +68,13 @@ namespace BackgammonFinalProject.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("StartTime")
+                    b.Property<DateTime?>("StartTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("WhitePlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("WinnerId")
+                    b.Property<int?>("WinnerId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -109,35 +112,6 @@ namespace BackgammonFinalProject.Server.Migrations
                     b.ToTable("Message");
                 });
 
-            modelBuilder.Entity("BackgammonFinalProject.Server.Models.Player", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Player");
-                });
-
             modelBuilder.Entity("BackgammonFinalProject.Server.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -167,6 +141,21 @@ namespace BackgammonFinalProject.Server.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("GameUser", b =>
+                {
+                    b.Property<int>("GamesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GamesId", "PlayersId");
+
+                    b.HasIndex("PlayersId");
+
+                    b.ToTable("UserGames", (string)null);
+                });
+
             modelBuilder.Entity("BackgammonFinalProject.Server.Models.Message", b =>
                 {
                     b.HasOne("BackgammonFinalProject.Server.Models.Game", "Game")
@@ -186,35 +175,24 @@ namespace BackgammonFinalProject.Server.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("BackgammonFinalProject.Server.Models.Player", b =>
+            modelBuilder.Entity("GameUser", b =>
                 {
-                    b.HasOne("BackgammonFinalProject.Server.Models.Game", "Game")
-                        .WithMany("Players")
-                        .HasForeignKey("GameId")
+                    b.HasOne("BackgammonFinalProject.Server.Models.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GamesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BackgammonFinalProject.Server.Models.User", "User")
-                        .WithMany("Players")
-                        .HasForeignKey("UserId")
+                    b.HasOne("BackgammonFinalProject.Server.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("PlayersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Game");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BackgammonFinalProject.Server.Models.Game", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("Players");
-                });
-
-            modelBuilder.Entity("BackgammonFinalProject.Server.Models.User", b =>
-                {
-                    b.Navigation("Players");
                 });
 #pragma warning restore 612, 618
         }

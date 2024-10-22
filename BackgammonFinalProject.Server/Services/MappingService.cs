@@ -6,7 +6,6 @@ namespace BackgammonFinalProject.Server.Services
 {
     public class MappingService
     {
-
         public GameDto MapGameToDto(Game game)
         {
             return new GameDto
@@ -17,20 +16,10 @@ namespace BackgammonFinalProject.Server.Services
                 WinnerId = game.WinnerId,
                 StartTime = game.StartTime,
                 EndTime = game.EndTime,
-                Players = game.Players.Select(p => new PlayerDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Color = p.Color
-                }).ToHashSet() ?? [],
+                Players = game.Players?.Select(MapUserToDto).ToHashSet() ?? [],
                 BlackPlayerId = game.BlackPlayerId,
                 WhitePlayerId = game.WhitePlayerId,
-                Messages = game.Messages?.Select(m => new MessageDto
-                {
-                    Content = m.Content,
-                    Timestamp = m.Timestamp,
-                    SenderName = m.Sender!.Username
-                }).ToList() ?? [],
+                Messages = game.Messages?.Select(MapMessageToDto).ToList() ?? [], 
                 BarBlack = game.BarBlack,
                 BarWhite = game.BarWhite,
                 OutsideBarBlack = game.OutsideBarBlack,
@@ -49,17 +38,19 @@ namespace BackgammonFinalProject.Server.Services
                 Username = user.Username,
                 Email = user.Email,
                 CreatedAt = user.CreatedAt,
-                GameIds = user.Players.Select(game => game.GameId).ToList()
+                GameIds = user.Games?.Select(g => g.Id).ToList() ?? [] 
             };
         }
+
         public MessageDto MapMessageToDto(Message message)
         {
             return new MessageDto
             {
                 Content = message.Content,
                 Timestamp = message.Timestamp,
-                SenderName = message.Sender!.Username
+                SenderName = message.Sender?.Username ?? "Unknown" 
             };
         }
     }
+
 }

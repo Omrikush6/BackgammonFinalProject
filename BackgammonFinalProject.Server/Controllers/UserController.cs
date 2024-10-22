@@ -1,4 +1,4 @@
-﻿using BackgammonFinalProject.Server.DTOs.UserDto.UserDtos;
+﻿using BackgammonFinalProject.Server.DTOs.UserDtos;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
 using BackgammonFinalProject.Server.Services;
 using Microsoft.AspNetCore.Authorization;

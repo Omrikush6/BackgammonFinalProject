@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
-import  GameLogic  from '../../Services/GameLogic';
+import  GamehubService  from '../../Services/GameHubService';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../App'
 import './Join.css';
@@ -13,7 +13,7 @@ const useGames = () => {
       setLoading(true);
       setError(null);
       try {
-        const gamesData = await GameLogic.fetchAllGames();
+        const gamesData = await GamehubService.fetchAllGames();
         setGames(gamesData);
       } catch (error) {
         console.error('Error fetching games:', error);
@@ -41,14 +41,23 @@ const useGames = () => {
     const handleJoinGame = async (gameId) => {
         setJoinError(null);
         try {
-            await GameLogic.joinGame(gameId, user.id);
-            navigate(`/game/${gameId}`);
+          const token = localStorage.getItem('token');
+          const response = await fetch(`https://localhost:7027/api/Game/JoinGame/${gameId}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+              }});
+          if (!response.ok) {
+              throw new Error('Failed to join game: ' + await response.text());
+          }
+          const data = await response.json();
+          navigate(`/game/${data}`);
         } catch (error) {
             console.error(error);
             setJoinError(error.message);
         }
     };
-
     const sortedGames = useMemo(() => {
         return [...games].sort((a, b) => {
             const userInA = a.players.some(player => player.id == user.id);

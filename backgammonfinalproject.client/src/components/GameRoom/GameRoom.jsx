@@ -1,43 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useDebugValue } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GameLogic from '../../Services/GameLogic';
 import SignalRService from '../../Services/SignalRService';
+import GameHubService from '../../Services/GameHubService';
 import { UserContext } from '../../App';
 import Game from '../Game/Game';
 import Chat from '../Chat/Chat';
 import './GameRoom.css';
 
 function GameRoom() {
-  const { gameId } = useParams();
   const navigate = useNavigate();
+  const { gameId } = useParams();
   const { user, isLoggedIn } = useContext(UserContext);
-  const [game, setGame] = useState(GameLogic.gameState);
+  const [game, setGame] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [error, setError] = useState(null);
   const [gameEnded, setGameEnded] = useState(false);
   const [winner, setWinner] = useState(null);
   const [turnNotification, setTurnNotification] = useState(null);
-
-  useEffect(() => {
-    if (game && user && game.players && game.players.white && game.players.black) {
-      const isPlayerTurn = game.currentTurn == user.id;
-      const playerColor = game.players.white.id == user.id ? 'White' : 'Black';
-      const opponentColor = playerColor === 'White' ? 'Black' : 'White';
-      let message;
-      if (isPlayerTurn) {
-        message = `It's your turn! You're playing as ${playerColor}.`;
-      } else {
-        message = `It's ${opponentColor}'s turn now.`;
-      }
-      setTurnNotification(message);
-      const timer = setTimeout(() => setTurnNotification(null), 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setTurnNotification(null);
-    }
-  }, [game.currentTurn, user]);
+  const [error, setError] = useState(null);
 
 
+  // Authentication check
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/');
@@ -46,152 +28,130 @@ function GameRoom() {
 
   useEffect(() => {
     if (!user || !user.id) return;
-
     const initializeGame = async () => {
       try {
-        const gameState  = await GameLogic.joinGame(gameId, user.id);
-        setGame({...gameState});
-        setMessages(gameState.messages || []);
-        const players = gameState.players;
-        if (players && players.white && players.black) {
-          setWinner(
-            GameLogic.gameState.winnerId === players.white.id ? 'white' : 'black'
-          );
-        } else {
-          setWinner(null);
+        SignalRService.connect(gameId, user.id);
+        if (game && game?.gameStatus == 3) {
+          setWinner(game.winnerId == game.whitePlayerId ? 'white' : 'black');
         }
-        setGameEnded(gameState.gameStatus == '3');
+        setGameEnded(game?.gameStatus == 3);
       } catch (error) {
         handleError('initialize game', error);
       }
     };
-
     initializeGame();
-
     return () => {
       SignalRService.disconnect();
     };
   }, [gameId, user]);
 
+  //notafication of turns and winning
   useEffect(() => {
+    if (game?.currentTurn && game.gameStatus == 2) {
+        const isPlayerTurn = game.currentTurn == user.id;
+        const playerColor = game.whitePlayerId == user.id ? 'White' : 'Black';
+        const opponentColor = playerColor == 'White' ? 'Black' : 'White';
+        
+        const message = isPlayerTurn
+            ? `It's your turn! You're playing as ${playerColor}.`
+            : `It's ${opponentColor}'s turn now.`;
+        
+        setTurnNotification(message);
+        const timer = setTimeout(() => setTurnNotification(null), 2000);
+        return () => clearTimeout(timer);
+    }
+}, [game?.currentTurn, game?.gameStatus, user?.id]);
 
+
+
+// SignalR event handlers setup
+  useEffect(() => {
     const handleGameStarted = (updatedGame) => {
-      GameLogic.initializeGame(updatedGame);
-      setGame({...GameLogic.gameState});
-    };
-
-    const handleGameUpdated = (updatedGame) => {
-      GameLogic.initializeGame(updatedGame);
-      setGame({...GameLogic.gameState});
-    };
-
-    const handleMessageReceived = (message) => {
-      setMessages(prevMessages => [...prevMessages, message]);
-    };
-
-    const handleGameEnded = (gameEndData) => {
-  
-      if (!gameEndData || !gameEndData.currentStateJson) {
-          console.error('Invalid gameEndData received');
-          return;
-      }
-  
-      let finalGameState;
-      try {
-          finalGameState = JSON.parse(gameEndData.currentStateJson);
-      } catch (error) {
-          console.error('Error parsing currentStateJson:', error);
-          return;
-      }
-  
-      setGameEnded(true);
-      let winnerColor;
-      if (finalGameState.players && finalGameState.players.white && finalGameState.players.black) {
-          winnerColor = gameEndData.winnerId === finalGameState.players.white.id ? 'white' : 'black';
-      } else {
-          console.error('Unable to determine winner color');
-          winnerColor = 'unknown';
-      }
-  
-      setWinner(winnerColor);
-      GameLogic.initializeGame(gameEndData);
-      setGame({...GameLogic.gameState});
-      alert(`Game ended. ${winnerColor.charAt(0).toUpperCase() + winnerColor.slice(1)} player won!`);
+      setGame(updatedGame);
+      setMessages(updatedGame.messages || []);
   };
 
-    SignalRService.setOnGameStarted(handleGameStarted);
-    SignalRService.setOnGameUpdated(handleGameUpdated);
-    SignalRService.setOnMessageReceived(handleMessageReceived);
-    SignalRService.setOnPlayerJoined(handleGameUpdated);
-    SignalRService.setOnGameEnded(handleGameEnded);
-    SignalRService.setOnError(setError);
+  const handleGameUpdated = (updatedGame) => {
+      setGame(updatedGame);
+      setMessages(updatedGame.messages || []);
+  };
 
-    return () => {
-      SignalRService.setOnGameStarted(null);
-      SignalRService.setOnGameUpdated(null);
-      SignalRService.setOnMessageReceived(null);
-      SignalRService.setOnPlayerJoined(null);
-      SignalRService.setOnGameEnded(null);
-      SignalRService.setOnError(null);
-    };
-  }, []);
+  const handleMessageReceived = (message) => {
+      setMessages(prev => [...prev, message]);
+  };
 
+  const handleGameEnded = (endedGame) => {
+    if (!endedGame) return;
+
+    const winnerColor = endedGame.winnerId === endedGame.whitePlayerId ? 'white' : 'black';
+    setGameEnded(true);
+    setWinner(winnerColor);
+    setGame(endedGame);
+
+    const message = `Game ended. ${winnerColor.charAt(0).toUpperCase() + winnerColor.slice(1)} player won!`;
+    setTurnNotification(message);
+    const timer = setTimeout(() => setTurnNotification(null), 2000);
+    return () => clearTimeout(timer);
+};
+
+// Register event handlers
+GameHubService.onGameStarted(handleGameStarted);
+GameHubService.onGameUpdated(handleGameUpdated);
+GameHubService.onMessageReceived(handleMessageReceived);
+GameHubService.onPlayerJoined(handleGameUpdated);
+GameHubService.onGameEnded(handleGameEnded);
+GameHubService.onError(setError);
+
+}, []);
+
+  // Event handlers
   const handleStartGame = async () => {
-    if (!user) return;
-    if (game.gameStatus != '1') {
+    if (!user || game.gameStatus !== 1) {
       handleError('start game', new Error('Game is not ready to start'));
       return;
     }
-
     try {
-      await SignalRService.StartGame(gameId, user.id);
-      // The game state will be updated via the SignalR event handlers
+      await GameHubService.startGame(gameId);
     } catch (err) {
       handleError('start game', err);
     }
-  };
-
-  const handleError = (action, error) => {
-    //console.error(`Error ${action}: `, error);
-    setError(`Failed to ${action}: ${error.message}`);
-    setTimeout(() => {
-      setError(null); // Reset the error message
-    }, 3000);
   };
 
 
   const handleSendMessage = async (message) => {
     if (!user) return;
     try {
-      await SignalRService.sendMessage(gameId, user.id, message);
+      await GameHubService.sendMessage(gameId, user.id, message);
     } catch (err) {
       handleError('send message', err);
     }
   };
 
 
-  const handleRollDice = () => {
-    const result = GameLogic.rollDice(user.id);
-    if (result.success) {
-        setGame(prevGame => ({
-            ...prevGame,
-            diceValues: result.diceValues,
-            isRolled: true
-        }));
-    } else {
-        handleError('roll dice', new Error(result.message));
+  const handleRollDice = async () => {
+    debugger;
+    try {
+        await GameHubService.rollDice(gameId, user.id);
+    } catch (err) {
+        handleError('roll dice', err);
     }
 };
 
-  const handleMove = (from, to) => {
-    const result = GameLogic.moveChecker(from, to, parseInt(user.id));
-    if (result.success) {
-      setGame(prevGame => ({...prevGame, ...result.updatedGame}));
-      setTurnNotification(result.message);
-    } else {
-      handleError('move checker', new Error(result.message));
+const handleMove = async (from, to) => {
+    try {
+        await GameHubService.moveChecker(gameId, user.id, from, to);
+    } catch (err) {
+        handleError('move checker', err);
     }
-  };
+};
+
+const handleError = (action, error) => {
+  debugger;
+  setError(`Failed to ${action}: ${error.message}`);
+  setTimeout(() => {
+    setError(null);
+  }, 3000);
+};
 
 
   if (!game || !user) {

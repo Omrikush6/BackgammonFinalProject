@@ -18,16 +18,17 @@ namespace BackgammonFinalProject.Server.Models
         public int? DrawOfferedBy { get; set; }
         public DateTime? StartTime { get; set; } = DateTime.UtcNow;
         public DateTime? EndTime { get; set; }
-        public HashSet<Player> Players { get; set; } = [];
+        public HashSet<User> Players { get; set; } = [];
         public int? WhitePlayerId { get; set; }
         public int? BlackPlayerId { get; set; }
         public List<Message> Messages { get; set; } = [];
-        public string PointsJson { get; set; } = "[]";
+        public string PointsJson { get; set; } = JsonSerializer.Serialize(Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray());
 
         [NotMapped]
         public Point[] Points
         {
-            get => JsonSerializer.Deserialize<Point[]>(PointsJson) ?? [];
+            get => JsonSerializer.Deserialize<Point[]>(PointsJson)
+                       ?? Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray();
             set => PointsJson = JsonSerializer.Serialize(value);
         }
 

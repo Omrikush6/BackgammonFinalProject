@@ -16,15 +16,7 @@ namespace BackgammonFinalProject.Server.Services
         {
             var game = new Game
             {
-                Players =
-                [
-                    new() {
-                        User = user,
-                        Color = null,
-                        UserId = user.Id,
-                        Name = user.Username  
-                    }
-                ],
+                Players = [user],
                 GameStatus = GameStatus.WaitingForPlayers
             };
             await _gameRepository.CreateAsync(game);
@@ -45,13 +37,13 @@ namespace BackgammonFinalProject.Server.Services
             if (user == null)
                 return (false, "User not found.", null);
 
-            if (game.Players.Any(p => p.UserId == userId))
+            if (game.Players.Any(p => p.Id == userId))
                 return (true, "Player already in the game.", game);
 
             if (game.Players.Count >= 2)
                 return (false, "Game is full.", null);
 
-            game.Players.Add(new Player{User = user,Color = null,UserId = user.Id,Name = user.Username});
+            game.Players.Add(user);
             if (game.Players.Count == 2)
                 game.GameStatus = GameStatus.ReadyToStart;
 
@@ -121,7 +113,6 @@ namespace BackgammonFinalProject.Server.Services
 
             return (Success, Message, game);
         }
-
 
         public async Task<(bool Success, string Message, Message? message)> AddMessageAsync(int gameId, int playerId, string messageContent)
         {

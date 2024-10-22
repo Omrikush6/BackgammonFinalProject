@@ -82,7 +82,7 @@ namespace BackgammonFinalProject.Server.Hubs
                 var (Success, Message, Game) = await _gameService.RollDiceAsync(gameId, playerId);
                 if (Success)
                 {
-                    await Clients.Group(gameId.ToString()).SendAsync("DiceRolled", _mappingService.MapGameToDto(Game!));
+                    await Clients.Group(gameId.ToString()).SendAsync("GameUpdated", _mappingService.MapGameToDto(Game!));
                 }
                 else
                 {

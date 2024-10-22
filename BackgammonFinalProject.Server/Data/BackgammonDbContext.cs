@@ -13,16 +13,13 @@ namespace BackgammonFinalProject.Server.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Player>()
-                 .HasOne(p => p.User)
-                 .WithMany(u => u.Players)
-                 .HasForeignKey(p => p.UserId);
+            // Configure many-to-many relationship between Users and Games
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Games)        // User can participate in many Games
+                .WithMany(g => g.Players)     // Game can have many Players (Users)
+                .UsingEntity(j => j.ToTable("UserGames")); // Join table for User-Game relationship
 
-            modelBuilder.Entity<Player>()
-                .HasOne(p => p.Game)
-                .WithMany(g => g.Players)
-                .HasForeignKey(p => p.GameId);
-
+            // Ensure PointsJson is stored as nvarchar(max)
             modelBuilder.Entity<Game>()
                 .Property(g => g.PointsJson)
                 .HasColumnType("nvarchar(max)");
