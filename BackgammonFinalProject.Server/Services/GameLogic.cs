@@ -10,15 +10,14 @@ namespace BackgammonFinalProject.Server.Services
 
         public void InitializeGame(Game game)
         {
-            game.Points[0] = new Point { PlayerColor = "white", Checkers = 2 };
-            game.Points[5] = new Point { PlayerColor = "black", Checkers = 5 };
-            game.Points[7] = new Point { PlayerColor = "black", Checkers = 3 };
-            game.Points[11] = new Point { PlayerColor = "white", Checkers = 5 };
-            game.Points[12] = new Point { PlayerColor = "black", Checkers = 5 };
-            game.Points[16] = new Point { PlayerColor = "white", Checkers = 3 };
-            game.Points[18] = new Point { PlayerColor = "white", Checkers = 5 };
-            game.Points[23] = new Point { PlayerColor = "black", Checkers = 2 };
-
+            game.Points[0].PlayerColor = "white"; game.Points[0].Checkers = 2;
+            game.Points[5].PlayerColor = "black"; game.Points[5].Checkers = 5;
+            game.Points[7].PlayerColor = "black"; game.Points[7].Checkers = 3;
+            game.Points[11].PlayerColor = "white"; game.Points[11].Checkers = 5;
+            game.Points[12].PlayerColor = "black"; game.Points[12].Checkers = 5;
+            game.Points[16].PlayerColor = "white"; game.Points[16].Checkers = 3;
+            game.Points[18].PlayerColor = "white"; game.Points[18].Checkers = 5;
+            game.Points[23].PlayerColor = "black"; game.Points[23].Checkers = 2;
             game.BarWhite = 0;
             game.BarBlack = 0;
             game.OutsideBarWhite = 0;
@@ -36,17 +35,18 @@ namespace BackgammonFinalProject.Server.Services
 
         public (bool Success, string Message) RollDice(Game game, int userId)
         {
-            if (!_validations.CanRollDice(game, userId))
-                return (false, "Unable to roll dice");
+            (bool success, string message) = _validations.CanRollDice(game, userId);
+            if (!success)
+                return (false, message);
 
-            var random = new Random();
+            Random random = new();
             int die1 = random.Next(1, 7);
             int die2 = random.Next(1, 7);
 
-            game.DiceValues = die1 == die2 ? new int[] { die1, die1, die1, die1 } : new int[] { die1, die2 };
+            game.DiceValues = die1 == die2 ? [die1, die1, die1, die1] : [die1, die2];
             game.IsRolled = true;
 
-            var movingColor = game.CurrentTurn == game.WhitePlayerId ? "white" : "black";
+            string movingColor = game.CurrentTurn == game.WhitePlayerId ? "white" : "black";
             if (!_validations.CheckForPossibleMovesFromBar(game, movingColor))
             {
                 EndTurn(game);
@@ -103,7 +103,6 @@ namespace BackgammonFinalProject.Server.Services
 
         private (bool Success, string Message) MoveFromBarToPoint(Game game, string from, int to, string movingColor)
         {
-            string fromBar = from;
             var toPoint = game.Points[to];
             int diceValueUsed = movingColor == "white" ? to + 1 : 24 - to;
 
@@ -203,11 +202,7 @@ namespace BackgammonFinalProject.Server.Services
         private void RemoveUsedDiceValue(Game game, int usedValue)
         {
             var diceList = game.DiceValues.ToList();
-            if (diceList.Contains(usedValue))
-            {
-                diceList.Remove(usedValue);
-            }
-            else
+            if (!diceList.Remove(usedValue))
             {
                 // Remove the largest die value that's smaller than or equal to the used value
                 var largestUsableDie = diceList.Where(d => d <= usedValue).OrderByDescending(d => d).FirstOrDefault();
@@ -216,7 +211,7 @@ namespace BackgammonFinalProject.Server.Services
                     diceList.Remove(largestUsableDie);
                 }
             }
-            game.DiceValues = diceList.ToArray();
+            game.DiceValues = [.. diceList];
         }
 
         private void EndTurn(Game game)

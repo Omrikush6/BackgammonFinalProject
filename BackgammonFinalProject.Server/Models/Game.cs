@@ -22,16 +22,13 @@ namespace BackgammonFinalProject.Server.Models
         public int? WhitePlayerId { get; set; }
         public int? BlackPlayerId { get; set; }
         public List<Message> Messages { get; set; } = [];
-        public string PointsJson { get; set; } = JsonSerializer.Serialize(Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray());
-
         [NotMapped]
-        public Point[] Points
+        public Point[] Points { get; set; } = Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray();
+        public string PointsJson
         {
-            get => JsonSerializer.Deserialize<Point[]>(PointsJson)
-                       ?? Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray();
-            set => PointsJson = JsonSerializer.Serialize(value);
+            get => JsonSerializer.Serialize(Points);
+            set => Points = JsonSerializer.Deserialize<Point[]>(value) ?? Enumerable.Range(0, 24).Select(_ => new Point { PlayerColor = null, Checkers = 0 }).ToArray();
         }
-
         public int BarWhite { get; set; }
         public int BarBlack { get; set; }
         public int OutsideBarWhite { get; set; }

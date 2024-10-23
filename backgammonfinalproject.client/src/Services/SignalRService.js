@@ -7,9 +7,6 @@ class SignalRService {
     }
 
     async connect(gameId, userId) {
-        if (this.connection) {
-            return; // Already connected
-        }
         const token = localStorage.getItem('token');
         this.connection = new HubConnectionBuilder()
             .withUrl(`https://localhost:7027/gameHub?access_token=${token}`)
@@ -18,23 +15,17 @@ class SignalRService {
             .build();
 
         this.setupEventHandlers();
-        try {
-            await this.connection.start();
-            await this.connection.invoke("JoinGame", parseInt(gameId), parseInt(userId));
-            console.log("SignalR Connected.");
-            while (this.connection.state !== 'Connected') {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        } catch (error) {
-            console.error("SignalR Connection Error:", error);
-            throw error;
+        await this.connection.start();
+        console.log("SignalR Connected.");
+        while (this.connection.state !== 'Connected') {
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
+        await this.connection.invoke("JoinGame", parseInt(gameId), parseInt(userId));
     }
 
     async disconnect() {
         if (this.connection) {
             await this.connection.stop();
-            this.connection = null;
             console.log("SignalR Disconnected.");
         }
     }

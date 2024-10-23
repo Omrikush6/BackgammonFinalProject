@@ -6,11 +6,15 @@ namespace BackgammonFinalProject.Server.Services
 {
     public class GameLogicValidations
     {
-        public bool CanRollDice(Game game, int userId)
+        public (bool Success, string Message) CanRollDice(Game game, int userId)
         {
-            return game.CurrentTurn == userId &&
-                   !game.IsRolled &&
-                   game.GameStatus == GameStatus.InProgress;
+            if (game.CurrentTurn != userId)
+                return (false, "Its not your turn");
+            if (game.IsRolled)
+                return (false, "The dice have already been rolled");
+            if (game.GameStatus != GameStatus.InProgress)
+                return (false, "Game is not in session");
+            return (true, "dice can be rolled");
         }
 
         public (bool Success, string Message) IsValidMove(Game game, int userId, string from, string to)
@@ -168,7 +172,7 @@ namespace BackgammonFinalProject.Server.Services
 
         private bool IsHighestCheckerInHomeBoard(Game game, int from, string movingColor)
         {
-            var homeBoard = movingColor == "white" ? new[] { 18, 19, 20, 21, 22, 23 } : new[] { 0, 1, 2, 3, 4, 5 };
+            int[] homeBoard = movingColor == "white" ? [18, 19, 20, 21, 22, 23] : [ 0, 1, 2, 3, 4, 5 ];
             var higherPoints = movingColor == "white"
                 ? homeBoard.Where(point => point > from)
                 : homeBoard.Where(point => point < from);

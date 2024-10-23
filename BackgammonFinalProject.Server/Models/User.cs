@@ -15,7 +15,7 @@ namespace BackgammonFinalProject.Server.Models
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public List<Game> Games { get; set; } = new List<Game>();
+        public List<Game> Games { get; set; } = [];
 
     }
 }

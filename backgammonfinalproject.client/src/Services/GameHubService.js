@@ -11,15 +11,13 @@ class GameHubService {
     }
 
     async rollDice(gameId, userId) {
-        try {
-            await SignalRService.invoke("RollDice", parseInt(gameId), parseInt(userId));
-        } catch (error) {
-            console.error("Error rolling dice:", error);
-        }
+        await SignalRService.invoke("RollDice", parseInt(gameId), parseInt(userId));
     }
 
     async moveChecker(gameId, userId, from, to) {
-        await SignalRService.invoke("MoveChecker", parseInt(gameId), parseInt(userId), from, to);
+        debugger;
+        alert(from + " " + to);
+        await SignalRService.invoke("MoveChecker", parseInt(gameId), parseInt(userId), String(from),String(to));
     }
 
     async sendMessage(gameId, userId, message) {
