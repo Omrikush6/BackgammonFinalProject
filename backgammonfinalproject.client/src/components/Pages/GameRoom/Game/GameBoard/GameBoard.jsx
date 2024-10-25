@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useContext } from 'react';
-import { UserContext } from '../../App';
-import Point from '../Point/Point';
+import { UserContext } from '../../../../../App';
+import Point from './Point/Point';
 import Bar from '../Bar/Bar';
 import OutsideBar from '../OutsideBar/OutsideBar';
 import './GameBoard.css';

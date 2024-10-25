@@ -1,86 +1,69 @@
 import SignalRService from './SignalRService';
 
 class GameHubService {
+    // Define hub methods and their parameters
+    hubMethods = {
+        JoinGame: ['gameId', 'userId'],
+        StartGame: ['gameId'],
+        RollDice: ['gameId', 'userId'],
+        MoveChecker: ['gameId', 'userId', 'from', 'to'],
+        SendMessage: ['gameId', 'userId', 'message'],
+        OfferDraw: ['gameId', 'userId'],
+        RespondToDraw: ['gameId', 'userId', 'accept'],
+        ForfeitGame: ['gameId', 'userId']
+    };
 
-    async joinGame(gameId,userId) {
-        await SignalRService.invoke("JoinGame", parseInt(gameId), parseInt(userId));
-    }
+    // Define events to listen for
+    hubEvents = [
+        'GameUpdated',
+        'MessageReceived',
+        'PlayerJoined',
+        'GameStarted',
+        'GameEnded',
+        'Error'
+    ];
 
-    async startGame(gameId) {
-        await SignalRService.invoke("StartGame", parseInt(gameId));
-    }
+    constructor() {
+        // Automatically create methods for all hub calls
+        Object.entries(this.hubMethods).forEach(([methodName, params]) => {
+            this[methodName.charAt(0).toLowerCase() + methodName.slice(1)] = async (...args) => {
+                const processedArgs = args.map((arg, index) => {
+                    if (params[index].includes('Id')) return parseInt(arg);
+                    if (params[index] === 'from' || params[index] === 'to') return String(arg);
+                    return arg;
+                });
+                await SignalRService.invoke(methodName, ...processedArgs);
+            };
+        });
 
-    async rollDice(gameId, userId) {
-        await SignalRService.invoke("RollDice", parseInt(gameId), parseInt(userId));
-    }
-
-    async moveChecker(gameId, userId, from, to) {
-        debugger;
-        alert(from + " " + to);
-        await SignalRService.invoke("MoveChecker", parseInt(gameId), parseInt(userId), String(from),String(to));
-    }
-
-    async sendMessage(gameId, userId, message) {
-        await SignalRService.invoke("SendMessage", parseInt(gameId), parseInt(userId), message);
-    }
-
-    async offerDraw(gameId, userId) {
-        await SignalRService.invoke("OfferDraw", parseInt(gameId), parseInt(userId));
-    }
-
-    async respondToDraw(gameId, userId, accept) {
-        await SignalRService.invoke("RespondToDraw", parseInt(gameId), parseInt(userId), accept);
-    }
-
-    async forfeitGame(gameId, userId) {
-        await SignalRService.invoke("ForfeitGame", parseInt(gameId), parseInt(userId));
-    }
-
-    onGameUpdated(callback) {
-        SignalRService.on("GameUpdated", callback);
-    }
-
-    onMessageReceived(callback) {
-        SignalRService.on("MessageReceived", callback);
-    }
-
-    onPlayerJoined(callback) {
-        SignalRService.on("PlayerJoined", callback);
-    }
-
-    onGameStarted(callback) {
-        SignalRService.on("GameStarted", callback);
-    }
-
-    onGameEnded(callback) {
-        SignalRService.on("GameEnded", callback);
-    }
-
-    onError(callback) {
-        SignalRService.on("Error", callback);
+        // Automatically create event handlers
+        this.hubEvents.forEach(event => {
+            this[`on${event}`] = (callback) => {
+                SignalRService.on(event, callback);
+            };
+        });
     }
 
     removeAllEventListeners() {
-        ["GameUpdated", "MessageReceived", "PlayerJoined", 
-         "GameStarted", "GameEnded", "Error"].forEach(event => {
+        this.hubEvents.forEach(event => {
             SignalRService.off(event);
         });
     }
-    
+
     async fetchAllGames() {
         const token = localStorage.getItem('token');
         const response = await fetch('https://localhost:7027/api/Game/AllGames', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
-    
+
         if (!response.ok) {
-          throw new Error(`Error fetching games: ${response.statusText}`);
+            throw new Error(`Error fetching games: ${response.statusText}`);
         }
-    
+
         return await response.json();
     }
 }

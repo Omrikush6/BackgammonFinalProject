@@ -104,9 +104,8 @@ namespace BackgammonFinalProject.Server.Controllers
                 return BadRequest("No token provided");
 
             JwtSecurityTokenHandler handler = new();
-            JwtSecurityToken? jsonToken = handler.ReadToken(token) as JwtSecurityToken;
 
-            if (jsonToken == null)
+            if (handler.ReadToken(token) is not JwtSecurityToken jsonToken)
                 return BadRequest("Invalid token");
 
             var username = jsonToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;

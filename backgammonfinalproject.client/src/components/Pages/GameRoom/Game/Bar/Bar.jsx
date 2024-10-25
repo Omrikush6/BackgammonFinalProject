@@ -1,5 +1,5 @@
 import React from 'react';
-import Checker from '../Checker/Checker';
+import Checker from '../GameBoard/Checker/Checker';
 import './Bar.css';
 
 const Bar = ({ whitePieces, blackPieces, onBarClick, selectedBar }) => {

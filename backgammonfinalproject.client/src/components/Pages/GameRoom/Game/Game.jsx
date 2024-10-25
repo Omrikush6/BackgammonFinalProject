@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import GameBoard from '../GameBoard/GameBoard';
-import DiceContainer from '../DiceContainer/DiceContainer';
+import GameBoard from './GameBoard/GameBoard';
+import DiceContainer from './DiceContainer/DiceContainer';
 import './Game.css';
 
 

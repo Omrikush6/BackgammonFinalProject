@@ -1,14 +1,9 @@
 import React, { useState, useEffect, useCallback, createContext } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter} from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import Login from './components/Login/Login';
-import Lobby from './components/Lobby/Lobby';
-import GameRoom from './components/GameRoom/GameRoom';
+import AnimatedRoutes from './components/AnimatedRoutes/AnimatedRoutes';
 import Footer from './components/Footer/Footer';
-import Profile from './components/Profile/Profile'
-import Contact from './components/Contact/Contact'
 import './App.css';
-import Join from './components/Join/Join';
 
 export const UserContext = createContext(null);
 
@@ -125,15 +120,8 @@ function App() {
   return (
     <UserContext.Provider value={{ user, login, logout, isLoggedIn }}>
     <BrowserRouter>
-      <Routes>
-        <Route path='/' element={isLoggedIn ? <Navigate to='/Lobby' /> : <Login />} />
-        <Route path='/lobby' element={isLoggedIn ? <Lobby  /> : <Navigate to='/' />} />
-        <Route path="/Join" element={isLoggedIn ?<Join /> : <Navigate to='/Lobby' /> } />
-        <Route path='/game/:gameId' element={isLoggedIn ? <GameRoom /> : <Navigate to='/' />} />
-        <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/" />} /> 
-        <Route path="/contact" element={<Contact />} />
-        <Route path='*' element={<Navigate to={isLoggedIn ? '/Lobby' : '/'} />} />
-      </Routes>
+      <div className="background-container" />
+      <AnimatedRoutes />
       <Footer />
     </BrowserRouter>
     </UserContext.Provider>

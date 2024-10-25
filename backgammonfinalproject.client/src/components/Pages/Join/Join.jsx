@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
-import  GamehubService  from '../../Services/GameHubService';
+import GamehubService from '../../../Services/GameHubService';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../App'
+import { UserContext } from '../../../App';
 import './Join.css';
 
 const useGames = () => {

@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext, useDebugValue } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import SignalRService from '../../Services/SignalRService';
-import GameHubService from '../../Services/GameHubService';
-import { UserContext } from '../../App';
-import Game from '../Game/Game';
-import Chat from '../Chat/Chat';
+import SignalRService from '../../../Services/SignalRService';
+import GameHubService from '../../../Services/GameHubService';
+import { UserContext } from '../../../App';
+import Game from './Game/Game';
+import Chat from './Chat/Chat';
 import './GameRoom.css';
 
 function GameRoom() {

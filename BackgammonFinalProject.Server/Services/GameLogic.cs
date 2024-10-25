@@ -36,6 +36,7 @@ namespace BackgammonFinalProject.Server.Services
         public (bool Success, string Message) RollDice(Game game, int userId)
         {
             (bool success, string message) = _validations.CanRollDice(game, userId);
+
             if (!success)
                 return (false, message);
 
@@ -62,7 +63,7 @@ namespace BackgammonFinalProject.Server.Services
             if (!validationResult.Success)
                 return validationResult;
 
-            var movingColor = game.CurrentTurn == game.WhitePlayerId ? "white" : "black";
+            string movingColor = game.CurrentTurn == game.WhitePlayerId ? "white" : "black";
             var moveResult = ExecuteMove(game, from, to, movingColor);
 
             if (moveResult.Success)
@@ -88,20 +89,40 @@ namespace BackgammonFinalProject.Server.Services
 
         private (bool Success, string Message) ExecuteMove(Game game, string from, string to, string movingColor)
         {
+
             bool isFromBar = from == "barWhite" || from == "barBlack";
             bool isBearingOff = to == "outsideWhite" || to == "outsideBlack";
 
             if (isFromBar && int.TryParse(to, out int toPoint))
-                return MoveFromBarToPoint(game, from, toPoint, movingColor);
+                return MoveFromBarToPoint(game, toPoint, movingColor);
             else if (int.TryParse(from, out int fromPoint) && int.TryParse(to, out toPoint))
-                return MoveBetweenPoints(game, fromPoint, toPoint, movingColor);
+            {
+
+                int moveDistance = Math.Abs(toPoint - fromPoint);
+                if (game.DiceValues.Contains(moveDistance))
+                    return MoveBetweenPoints(game, fromPoint, toPoint, movingColor);
+                else
+                {
+                    List<int> path = _validations.CanSumToMove(moveDistance, game.DiceValues, game, fromPoint, movingColor).Path;
+                    int currentPosition = fromPoint;
+                    foreach (int step in path)
+                    {
+                        int nextPosition = movingColor == "white" ? currentPosition + step : currentPosition - step;
+                        var moveResult = MoveBetweenPoints(game, currentPosition, nextPosition, movingColor);
+                        if (!moveResult.Success)
+                            return moveResult;
+                        currentPosition = nextPosition;
+                    }
+                    return (true, "Move completed successfully");
+                }
+            }
             else if (int.TryParse(from, out fromPoint) && isBearingOff)
-                return BearOff(game, fromPoint, to, movingColor);
+                return BearOff(game, fromPoint, movingColor);
 
             return (false, "Invalid move type");
         }
 
-        private (bool Success, string Message) MoveFromBarToPoint(Game game, string from, int to, string movingColor)
+        private static (bool Success, string Message) MoveFromBarToPoint(Game game, int to, string movingColor)
         {
             var toPoint = game.Points[to];
             int diceValueUsed = movingColor == "white" ? to + 1 : 24 - to;
@@ -136,7 +157,7 @@ namespace BackgammonFinalProject.Server.Services
             return (true, "Moved checker from bar to point");
         }
 
-        private (bool Success, string Message) MoveBetweenPoints(Game game, int from, int to, string movingColor)
+        private static (bool Success, string Message) MoveBetweenPoints(Game game, int from, int to, string movingColor)
         {
             var fromPoint = game.Points[from];
             var toPoint = game.Points[to];
@@ -182,7 +203,7 @@ namespace BackgammonFinalProject.Server.Services
             return (true, "Moved checker between points");
         }
 
-        private (bool Success, string Message) BearOff(Game game, int from, string to, string movingColor)
+        private static (bool Success, string Message) BearOff(Game game, int from, string movingColor)
         {
             var fromPoint = game.Points[from];
             game.Points[from] = new Point
@@ -199,7 +220,7 @@ namespace BackgammonFinalProject.Server.Services
             return (true, "Beared off checker successfully");
         }
 
-        private void RemoveUsedDiceValue(Game game, int usedValue)
+        private static void RemoveUsedDiceValue(Game game, int usedValue)
         {
             var diceList = game.DiceValues.ToList();
             if (!diceList.Remove(usedValue))
@@ -214,14 +235,14 @@ namespace BackgammonFinalProject.Server.Services
             game.DiceValues = [.. diceList];
         }
 
-        private void EndTurn(Game game)
+        private static void EndTurn(Game game)
         {
             game.CurrentTurn = game.CurrentTurn == game.WhitePlayerId ? game.BlackPlayerId : game.WhitePlayerId;
             game.DiceValues = [0, 0];
             game.IsRolled = false;
         }
 
-        public (bool Success, string Message) ForfeitGame(Game game, int userId)
+        public static (bool Success, string Message) ForfeitGame(Game game, int userId)
         {
             if (game.GameStatus != GameStatus.InProgress)
                 return (false, "The game is not in progress");
@@ -233,7 +254,7 @@ namespace BackgammonFinalProject.Server.Services
             return (true, $"Player {userId} has forfeited the game");
         }
 
-        public (bool Success, string Message) OfferDraw(Game game, int userId)
+        public static (bool Success, string Message) OfferDraw(Game game, int userId)
         {
             if (game.GameStatus != GameStatus.InProgress)
                 return (false, "The game is not in progress");
@@ -243,7 +264,7 @@ namespace BackgammonFinalProject.Server.Services
             return (true, $"Player {userId} has offered a draw");
         }
 
-        public (bool Success, string Message) RespondToDraw(Game game, int userId, bool accept)
+        public static (bool Success, string Message) RespondToDraw(Game game, int userId, bool accept)
         {
             if (game.GameStatus != GameStatus.InProgress)
                 return (false, "The game is not in progress");
