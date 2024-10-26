@@ -100,7 +100,7 @@ GameHubService.onGameUpdated(handleGameUpdated);
 GameHubService.onMessageReceived(handleMessageReceived);
 GameHubService.onPlayerJoined(handleGameUpdated);
 GameHubService.onGameEnded(handleGameEnded);
-GameHubService.onError(setError);
+GameHubService.onError(handleError);
 
 }, []);
 
@@ -113,7 +113,7 @@ GameHubService.onError(setError);
     try {
       await GameHubService.startGame(gameId);
     } catch (err) {
-      handleError('start game', err);
+      handleError(err);
     }
   };
 
@@ -123,7 +123,7 @@ GameHubService.onError(setError);
     try {
       await GameHubService.sendMessage(gameId, user.id, message);
     } catch (err) {
-      handleError('send message', err);
+      handleError(err);
     }
   };
 
@@ -133,7 +133,7 @@ GameHubService.onError(setError);
     try {
         await GameHubService.rollDice(gameId, user.id);
     } catch (err) {
-        handleError('roll dice', err);
+        handleError(err);
     }
 };
 
@@ -145,9 +145,9 @@ const handleMove = async (from, to) => {
     }
 };
 
-const handleError = (action, error) => {
+const handleError = (error) => {
   debugger;
-  setError(`Failed to ${action}: ${error.message}`);
+  setError(error);
   setTimeout(() => {
     setError(null);
   }, 3000);

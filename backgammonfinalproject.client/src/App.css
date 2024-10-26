@@ -1,8 +1,9 @@
 body {
+    font-family: 'Montserrat', sans-serif;
     background-image: url('assets/back-gommon3.jpeg');
     background-size: cover; 
     background-repeat: no-repeat; 
     height: 100vh;
     margin: 0;
-    overflow: hidden;
+    overflow: auto;
 }

@@ -89,7 +89,7 @@ namespace BackgammonFinalProject.Server.Services
                 return (false, "Invalid move: destination occupied by opponent");
             //Combining dice validation
             int moveDistance = Math.Abs(to - from);
-            if (!game.DiceValues.Contains(moveDistance) || !CanSumToMove(moveDistance, game.DiceValues, game, from, movingColor).Success)
+            if (!game.DiceValues.Contains(moveDistance) && !CanSumToMove(moveDistance, game.DiceValues, game, from, movingColor).Success)
                 return (false, "Invalid move: does not match any dice combination");
 
             return (true, "Valid move between points");

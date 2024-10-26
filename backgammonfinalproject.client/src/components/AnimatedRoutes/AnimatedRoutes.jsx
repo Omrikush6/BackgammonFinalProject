@@ -8,6 +8,7 @@ import GameRoom from '../Pages/GameRoom/GameRoom';
 import Profile from '../Pages/Profile/Profile';
 import Contact from '../Pages/Contact/Contact';
 import Join from '../Pages/Join/Join';
+import './AnimatedRoutes.css';
 
 const transitions = {
     default: {
@@ -80,7 +81,7 @@ const AnimatedRoutes = () => {
         animate={transition.animate}
         exit={transition.exit}
         transition={transition.transition}
-        className="w-full h-full"
+        className="animated-container"
       >
         <Routes location={location} key={location.pathname}>
           <Route 

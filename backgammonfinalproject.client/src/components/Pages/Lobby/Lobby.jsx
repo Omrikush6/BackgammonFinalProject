@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import { useContext } from 'react';
@@ -14,8 +15,18 @@ const LobbyItem = ({ label, onClick, ghost }) => (
 );
 
 const Lobby = ({ }) => {
+  const { user } = useContext(UserContext);
   const { logout } = useContext(UserContext);
   const navigate = useNavigate();
+  const [turnNotification, setTurnNotification] = useState(null);
+  useEffect(() => {
+        const message = `Hey there ${user?.name}!`;
+        setTurnNotification(message);
+        const timer = setTimeout(() => setTurnNotification(null), 2000);
+        return () => clearTimeout(timer);
+    
+}, []);
+
 
   const handleGoBack = () => {
     logout();
@@ -54,22 +65,22 @@ const Lobby = ({ }) => {
   const lobbyItems = [
     { label: 'Start New Game', onClick: startNewGame },
     { label: 'Join Game Room', onClick: () => navigate('/join') },
-    { label: 'My Profile', onClick: () => navigate('/profile') },
+    { label: 'My Profile (' + user?.name + ')', onClick: () => navigate('/profile') },
     { label: 'Log Out', onClick: handleGoBack, ghost: true },
     { label: 'Contact Us', onClick: () => navigate('/contact') },
 
   ];
 
   return (
-    <div>
-      <Header/>
+    <>
+    {turnNotification && <div className="welcome-notification">{turnNotification}</div>}
     <div className="lobby-container">
       <h1 className="lobby-title">Lobby🎲</h1>
       {lobbyItems.map((item, index) => (
         <LobbyItem key={index} {...item} />
       ))}
     </div>
-    </div>
+    </>
   );
 };
 

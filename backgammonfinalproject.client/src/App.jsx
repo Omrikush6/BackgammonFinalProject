@@ -120,7 +120,6 @@ function App() {
   return (
     <UserContext.Provider value={{ user, login, logout, isLoggedIn }}>
     <BrowserRouter>
-      <div className="background-container" />
       <AnimatedRoutes />
       <Footer />
     </BrowserRouter>
