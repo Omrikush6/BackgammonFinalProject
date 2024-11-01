@@ -16,6 +16,7 @@ namespace BackgammonFinalProject.Server.Models
         public int? CurrentTurn { get; set; }
         public int? WinnerId { get; set; }
         public int? DrawOfferedBy { get; set; }
+        public DrawOfferStatus DrawOfferStatus { get; set; }
         public DateTime? StartTime { get; set; } = DateTime.UtcNow;
         public DateTime? EndTime { get; set; }
         public HashSet<User> Players { get; set; } = [];
@@ -52,5 +53,13 @@ namespace BackgammonFinalProject.Server.Models
         InProgress,
         Completed,
         Abandoned
+    }
+
+    public enum DrawOfferStatus
+    {
+        None,       // No draw offer
+        Pending,    // Draw offer made, awaiting response
+        Accepted,   // Draw offer accepted
+        Rejected    // Draw offer rejected
     }
 }

@@ -24,6 +24,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<MappingService>();
 builder.Services.AddScoped<GameLogic>();
 builder.Services.AddScoped<GameLogicValidations>();
+builder.Services.AddScoped<EmailService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>

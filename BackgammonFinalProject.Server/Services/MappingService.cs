@@ -27,6 +27,8 @@ namespace BackgammonFinalProject.Server.Services
                 DiceValues = game.DiceValues,
                 IsRolled = game.IsRolled,
                 Points = game.Points,
+                DrawOfferedBy = game.DrawOfferedBy,
+                DrawOfferStatus = game.DrawOfferStatus,
             };
         }
 

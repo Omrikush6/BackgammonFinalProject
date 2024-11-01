@@ -4,23 +4,23 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using BackgammonFinalProject.Server.Repositories;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
 using BackgammonFinalProject.Server.Services;
 using BackgammonFinalProject.Server.DTOs.UserDtos;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace BackgammonFinalProject.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IUserRepository userRepository, IConfiguration configuration, HashingService hashingService) : ControllerBase
+    public class AuthController(IUserRepository userRepository, IConfiguration configuration, HashingService hashingService, EmailService emailService) : ControllerBase
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IConfiguration _configuration = configuration;
         private readonly HashingService _hashingService = hashingService;
+        private readonly EmailService emailService = emailService;
+
 
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp(SignUpDto signUpDto)
@@ -119,5 +119,64 @@ namespace BackgammonFinalProject.Server.Controllers
 
             return Ok(new { Token = newToken });
         }
+
+        //[HttpPost("forgot-password")]
+        //public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        //{
+        //    try
+        //    {
+        //        var user = await _userRepository.GetByEmailAsync(request.Email);
+        //        if (user == null)
+        //        {
+        //            // Return success even if email doesn't exist to prevent email enumeration
+        //            return Ok(new { message = "If your email is registered, you will receive a password reset link." });
+        //        }
+
+        //        // Generate password reset token
+        //        var resetToken = await _userRepository.GeneratePasswordResetTokenAsync(user);
+
+        //        // Create reset link
+        //        var resetLink = $"{_configuration["AppSettings:ClientBaseUrl"]}/reset-password?token={resetToken}";
+
+        //        // Send email
+        //        var emailContent = $@"
+        //        <h2>Password Reset Request</h2>
+        //        <p>Click the link below to reset your password:</p>
+        //        <a href='{resetLink}'>Reset Password</a>
+        //        <p>If you didn't request this, please ignore this email.</p>
+        //        <p>This link will expire in 1 hour.</p>";
+
+        //        await _emailService.SendEmailAsync(
+        //            request.Email,
+        //            "Password Reset Request",
+        //            emailContent
+        //        );
+
+        //        return Ok(new { message = "If your email is registered, you will receive a password reset link." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "An error occurred while processing your request." });
+        //    }
+        //}
+
+        //[HttpPost("reset-password")]
+        //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        //{
+        //    try
+        //    {
+        //        var result = await _userRepository.ResetPasswordAsync(request.Token, request.NewPassword);
+        //        if (result)
+        //        {
+        //            return Ok(new { message = "Password has been reset successfully." });
+        //        }
+
+        //        return BadRequest(new { message = "Invalid or expired token." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "An error occurred while resetting your password." });
+        //    }
+        //}
     }
 }

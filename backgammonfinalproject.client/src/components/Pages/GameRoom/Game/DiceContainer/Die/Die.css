@@ -1,0 +1,137 @@
+/* Die container */
+.die {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease-out;
+}
+
+/* Base styling for each die face */
+.die-face {
+    width: 60px;
+    height: 60px;
+    background-color: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    position: absolute;
+    backface-visibility: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Position faces */
+.die-face.die-1 { transform: rotateY(0deg) translateZ(30px); }
+.die-face.die-2 { transform: rotateY(90deg) translateZ(30px); }
+.die-face.die-3 { transform: rotateY(180deg) translateZ(30px); }
+.die-face.die-4 { transform: rotateY(-90deg) translateZ(30px); }
+.die-face.die-5 { transform: rotateX(90deg) translateZ(30px); }
+.die-face.die-6 { transform: rotateX(-90deg) translateZ(30px); }
+
+/* Show appropriate face based on value */
+.die[data-value="1"] { transform: rotateY(0deg); }
+.die[data-value="2"] { transform: rotateY(-90deg); }
+.die[data-value="3"] { transform: rotateY(180deg); }
+.die[data-value="4"] { transform: rotateY(90deg); }
+.die[data-value="5"] { transform: rotateX(-90deg); }
+.die[data-value="6"] { transform: rotateX(90deg); }
+
+/* Rolling animation */
+.die.rolling {
+    animation: roll-animation 10s linear infinite;
+}
+
+/* Delayed rolling for second die */
+.die.rolling.delay {
+    animation: roll-animation 10s linear infinite 0.1s;
+}
+
+@keyframes roll-animation {
+    0% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    }
+    /* Initial fast spin */
+    10% {
+        transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg);
+    }
+    /* First "bounce" with direction change */
+    20% {
+        transform: rotateX(480deg) rotateY(-240deg) rotateZ(90deg);
+    }
+    /* Second spin */
+    35% {
+        transform: rotateX(-360deg) rotateY(720deg) rotateZ(-180deg);
+    }
+    /* Second "bounce" */
+    50% {
+        transform: rotateX(240deg) rotateY(-180deg) rotateZ(360deg);
+    }
+    /* Third spin, slowing down */
+    65% {
+        transform: rotateX(-180deg) rotateY(360deg) rotateZ(-90deg);
+    }
+    /* Final bounces and settling */
+    80% {
+        transform: rotateX(90deg) rotateY(-90deg) rotateZ(45deg);
+    }
+    90% {
+        transform: rotateX(-45deg) rotateY(45deg) rotateZ(-45deg);
+    }
+    95% {
+        transform: rotateX(20deg) rotateY(-20deg) rotateZ(20deg);
+    }
+    100% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    }
+}
+
+/* Dot styling */
+.dot {
+    width: 10px;
+    height: 10px;
+    background-color: #333;
+    border-radius: 50%;
+    position: absolute;
+}
+  
+  /* Positioning dots on each face for values 1-6 */
+  /* Face 1 */
+  .die-1 .dot-1 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  /* Face 2 */
+  .die-2 .dot-1 { top: 25%; left: 25%; }
+  .die-2 .dot-2 { bottom: 25%; right: 25%; }
+  
+  /* Face 3 */
+  .die-3 .dot-1 { top: 25%; left: 25%; }
+  .die-3 .dot-2 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .die-3 .dot-3 { bottom: 25%; right: 25%; }
+  
+  /* Face 4 */
+  .die-4 .dot-1 { top: 25%; left: 25%; }
+  .die-4 .dot-2 { top: 25%; right: 25%; }
+  .die-4 .dot-3 { bottom: 25%; left: 25%; }
+  .die-4 .dot-4 { bottom: 25%; right: 25%; }
+  
+  /* Face 5 */
+  .die-5 .dot-1 { top: 25%; left: 25%; }
+  .die-5 .dot-2 { top: 25%; right: 25%; }
+  .die-5 .dot-3 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .die-5 .dot-4 { bottom: 25%; left: 25%; }
+  .die-5 .dot-5 { bottom: 25%; right: 25%; }
+  
+  /* Face 6 */
+  .die-6 .dot-1 { top: 20%; left: 20%; }
+  .die-6 .dot-2 { top: 20%; right: 20%; }
+  .die-6 .dot-3 { top: 50%; left: 20%; transform: translateY(-50%); }
+  .die-6 .dot-4 { top: 50%; right: 20%; transform: translateY(-50%); }
+  .die-6 .dot-5 { bottom: 20%; left: 20%; }
+  .die-6 .dot-6 { bottom: 20%; right: 20%; }
+  

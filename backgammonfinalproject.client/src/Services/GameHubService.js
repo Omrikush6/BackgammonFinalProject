@@ -19,6 +19,9 @@ class GameHubService {
         'MessageReceived',
         'PlayerJoined',
         'GameStarted',
+        'DrawOffered',
+        'DrawDeclined',
+        'DrawAccepted',
         'GameEnded',
         'Error'
     ];

@@ -1,0 +1,9 @@
+.game-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #8B4513; /* Backgammon board color */
+  padding: 20px;
+  border-radius: 8px;
+  gap: 10px; /* Spacing between buttons */
+}

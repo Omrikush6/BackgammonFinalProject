@@ -81,7 +81,6 @@ function Login() {
                 <div className="form-container sign-up-container">
                     <form onSubmit={handleSubmit}>
                         <h1>Create Account!</h1>
-                        <span>or use your email for registration</span>
                         <input type="text" placeholder="Name" value={username} onChange={(e) => setUsername(e.target.value)} />
                         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                         <div className="password-container">
@@ -126,7 +125,7 @@ function Login() {
                             </button>
                         </div>
                         {error && <div className="error-message">{error}</div>}
-                        <a href="#">Forgot your password?</a>
+                      <a href="#"></a> 
                         <button type="submit">Sign In</button>
                     </form>
                 </div>

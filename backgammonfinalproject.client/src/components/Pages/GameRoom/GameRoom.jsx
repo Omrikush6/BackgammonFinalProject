@@ -5,6 +5,7 @@ import GameHubService from '../../../Services/GameHubService';
 import { UserContext } from '../../../App';
 import Game from './Game/Game';
 import Chat from './Chat/Chat';
+import GameControls from './Game/GameControls/GameControls';
 import './GameRoom.css';
 
 function GameRoom() {
@@ -17,6 +18,10 @@ function GameRoom() {
   const [winner, setWinner] = useState(null);
   const [turnNotification, setTurnNotification] = useState(null);
   const [error, setError] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [drawOffer, setDrawOffer] = useState(false);
+  const [drawResponse, setDrawResponse] = useState(null);
+
 
 
   // Authentication check
@@ -27,23 +32,47 @@ function GameRoom() {
   }, [isLoggedIn, navigate]);
 
   useEffect(() => {
+    // Early return if no user or no token
     if (!user || !user.id) return;
+
+    // Flag to track if the effect is still mounted
+    let isMounted = true;
+    let connectionAttempted = false;
+
     const initializeGame = async () => {
+      const token = localStorage.getItem('token');
+    
+      if (!token || connectionAttempted) return;
+    
+      connectionAttempted = true;
+    
       try {
-        SignalRService.connect(gameId, user.id);
-        if (game && game?.gameStatus == 3) {
-          setWinner(game.winnerId == game.whitePlayerId ? 'white' : 'black');
-        }
-        setGameEnded(game?.gameStatus == 3);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (!isMounted) return;
+    
+        await SignalRService.connect(token, gameId, user.id);
       } catch (error) {
-        handleError('initialize game', error);
+        if (isMounted) {
+          handleError('initialize game', error);
+        }
       }
+      debugger;
     };
     initializeGame();
+
+    // Cleanup function
     return () => {
-      SignalRService.disconnect();
+        isMounted = false;
+        SignalRService.disconnect();
     };
-  }, [gameId, user]);
+}, [gameId, user]);
+
+useEffect(() => {
+  if (game && game.gameStatus == 3) {
+    setGameEnded(true);
+    setWinner(game.winnerId == game.whitePlayerId ? 'white' : 'black');
+  }
+}, [game]);
 
   //notafication of turns and winning
   useEffect(() => {
@@ -62,8 +91,6 @@ function GameRoom() {
     }
 }, [game?.currentTurn, game?.gameStatus, user?.id]);
 
-
-
 // SignalR event handlers setup
   useEffect(() => {
     const handleGameStarted = (updatedGame) => {
@@ -78,6 +105,21 @@ function GameRoom() {
 
   const handleMessageReceived = (message) => {
       setMessages(prev => [...prev, message]);
+  };
+
+  const handleDrawOffered = () => {
+    setDrawOffer(true);
+  };
+  
+  const handleDrawDeclined = () => {
+    setDrawResponse('The opponent declined your draw offer.');
+    setTimeout(() => setDrawResponse(null), 3000);
+  };
+  
+  const handleDrawAccepted = () => {
+    setDrawResponse('The opponent accepted your draw offer. Game is a draw.');
+    setTimeout(() => setDrawResponse(null), 3000);
+    setGameEnded(true);
   };
 
   const handleGameEnded = (endedGame) => {
@@ -99,6 +141,9 @@ GameHubService.onGameStarted(handleGameStarted);
 GameHubService.onGameUpdated(handleGameUpdated);
 GameHubService.onMessageReceived(handleMessageReceived);
 GameHubService.onPlayerJoined(handleGameUpdated);
+GameHubService.onDrawOffered(handleDrawOffered);
+GameHubService.onDrawDeclined(handleDrawDeclined);
+GameHubService.onDrawAccepted(handleDrawAccepted);
 GameHubService.onGameEnded(handleGameEnded);
 GameHubService.onError(handleError);
 
@@ -117,7 +162,6 @@ GameHubService.onError(handleError);
     }
   };
 
-
   const handleSendMessage = async (message) => {
     if (!user) return;
     try {
@@ -127,15 +171,43 @@ GameHubService.onError(handleError);
     }
   };
 
-
   const handleRollDice = async () => {
-    debugger;
     try {
         await GameHubService.rollDice(gameId, user.id);
     } catch (err) {
         handleError(err);
     }
 };
+
+const handleForfeit = async () => {
+    try {
+      const confirmForfeit = window.confirm('Are you sure you want to forfeit the game?');
+      if (!confirmForfeit) return;
+      const winnerId = user.id === game.whitePlayerId 
+            ? game.blackPlayerId 
+            : game.whitePlayerId;
+        await GameHubService.forfeitGame(gameId, winnerId);
+    } catch (err) {
+        handleError(err);
+    }
+};
+
+const handleOfferDraw = async () => {
+    try {
+        await GameHubService.offerDraw(gameId, user.id);
+    } catch (err) {
+        handleError(err);
+    }
+};
+
+const handleRespondDraw = async (accepted) => {
+    try {
+        await GameHubService.respondDraw(gameId, user.id, accepted);
+    } catch (err) {
+        handleError(err);
+    }
+};
+
 
 const handleMove = async (from, to) => {
     try {
@@ -146,13 +218,11 @@ const handleMove = async (from, to) => {
 };
 
 const handleError = (error) => {
-  debugger;
   setError(error);
   setTimeout(() => {
     setError(null);
   }, 3000);
 };
-
 
   if (!game || !user) {
     return <div>Loading...</div>;
@@ -160,25 +230,56 @@ const handleError = (error) => {
 
   return (
     <>
-    {error && <div className="error">{error}</div>}
-    {turnNotification && <div className="turn-notification">{turnNotification}</div>}
-    
-    <div className="game-room">   
+      {error && (
+        <div className="error">
+          {error}
+        </div>
+      )}
+      {turnNotification && (
+        <div className="turn-notification">
+          {turnNotification}
+        </div>
+      )}
+      {gameEnded && (
+          <div className="game-end-overlay">
+            <h2>
+              {winner === 'You' ? 'Congratulations! You won!' : `Game Over. ${winner} won.`}
+            </h2>
+            <button onClick={() => navigate('/lobby')}>Return to Lobby</button>
+          </div>
+      )}
+      {drawOffer && (
+        <div className="draw-offer">
+          <p>Your opponent has offered a draw. Do you accept?</p>
+          <button onClick={() => handleRespondDraw(true)}>Accept</button>
+          <button onClick={() => handleRespondDraw(false)}>Decline</button>
+        </div>
+      )}
+      {drawResponse && (
+        <div className="draw-response">
+          {drawResponse}
+        </div>
+      )}
+      <div className="game-room">   
       <Game 
         game={game}
-        onStartGame={handleStartGame} 
         onRollDice={handleRollDice}
         onMove={handleMove}
-        onError={handleError}
       />
-      <Chat messages={messages} onSendMessage={handleSendMessage} user={user} />
-      {gameEnded && (
-                    <div className="game-end-overlay">
-                        <h2>{winner === 'You' ? 'Congratulations! You won!' : `Game Over. ${winner} won.`}</h2>
-                        <button onClick={() => navigate('/lobby')}>Return to Lobby</button>
-                    </div>
-                )}
-    </div>
+      <div className='chat'>
+      <Chat 
+          messages={messages} 
+          onSendMessage={handleSendMessage} 
+          user={user} 
+        />
+      </div>
+      </div>
+      <GameControls
+        gameStatus={game.gameStatus}
+        onStartGame={handleStartGame}
+        onForfeit={handleForfeit}
+        onOfferDraw={handleOfferDraw}
+      />
     </>
   );
 }

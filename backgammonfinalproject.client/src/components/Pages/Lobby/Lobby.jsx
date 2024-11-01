@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import { useContext } from 'react';
-import Header from './Header/Header';
 import './Lobby.css';
 
 

@@ -5,12 +5,5 @@
     background-color: #8B4513;
     padding: 20px;
     border-radius: 10px;
-    height: 800px; 
     box-sizing: border-box;
   }
-  .start-game{
-    margin-top: 10px;}
-
-.back-to-lobby{
-    margin-top: 10px;
-}

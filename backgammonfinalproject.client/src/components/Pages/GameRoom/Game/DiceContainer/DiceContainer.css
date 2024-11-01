@@ -1,31 +1,65 @@
 .dice-container {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
+  width: 100%;
+  height: 150px;
+  padding: 20px;
+  background-color: #A0522D;
+  border-radius: 8px;
 }
 
-.dice {
-  width: 50px;
-  height: 50px;
-  background-color: white;
-  border: 2px solid black;
+/* Dice Area Styles */
+.dice-area {
+  flex: 2;
+  height: 100%;
+  margin: 0 20px;
+}
+
+.dice-animation-container {
+  width: 100%;
+  height: 100%;
+  background-color: #8B4513;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
-  margin: 0 10px;
+  gap: 20px;
+  padding: 20px;
 }
 
-.dice-container button {
-  padding: 10px 20px;
-  font-size: 16px;
+/* Roll Button Styles */
+.roll-button-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.roll-button {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
   background-color: #4CAF50;
   color: white;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.dice-container button:hover {
+.roll-button:hover {
   background-color: #45a049;
+}
+
+.roll-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.roll-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }

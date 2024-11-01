@@ -12,6 +12,7 @@ namespace BackgammonFinalProject.Server.DTOs
         public int? CurrentTurn { get; set; }
         public int? WinnerId { get; set; }
         public int? DrawOfferedBy { get; set; }
+        public DrawOfferStatus DrawOfferStatus { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public HashSet<UserDto> Players { get; set; } = [];

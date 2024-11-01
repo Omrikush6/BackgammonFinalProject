@@ -3,22 +3,24 @@
   width: 100%;
   height: 100%;
   transition: all 0.2s ease;
+  align-items: center;
+  justify-content: center;
 }
 
 .point .triangle {
   width: 100%;
   height: 100%;
-  border-left: 30px solid transparent;
-  border-right: 30px solid transparent;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
   transition: all 0.2s ease;
 }
 
 .point.dark .triangle {
-  border-bottom: 275px solid #8B4513;
+  border-bottom: 200px solid #8B4513;
 }
 
 .point.light .triangle {
-  border-bottom: 275px solid #a82808;
+  border-bottom: 200px solid #a82808;
 }
 
 .point.top .triangle {
@@ -55,6 +57,7 @@
   left: 5px;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .point.top .checkers {

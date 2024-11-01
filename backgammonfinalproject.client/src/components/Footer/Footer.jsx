@@ -63,7 +63,6 @@ const Footer = () => {
           <p>© {currentYear} Backgammon Online. All rights reserved.</p>
           <div className="footer-bottom-links">
             <Link to="/privacy">Privacy Policy</Link>
-            <span>•</span>
             <Link to="/terms">Terms of Service</Link>
           </div>
         </div>

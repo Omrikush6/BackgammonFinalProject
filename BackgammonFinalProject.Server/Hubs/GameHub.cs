@@ -127,6 +127,57 @@ namespace BackgammonFinalProject.Server.Hubs
             });
         }
 
+        public async Task ForfeitGame(int gameId, int userId)
+        {
+            await HandleRequest(async () =>
+            {
+                var (Success, Message, Game) = await _gameService.ForfeitGameAsync(gameId, userId);
+                if (Success)
+                {
+                    await Clients.Group(gameId.ToString()).SendAsync("GameEnded", _mappingService.MapGameToDto(Game!));
+                }
+                else
+                {
+                    throw new HubException(Message);
+                }
+            });
+        }
+
+        public async Task OfferDraw(int gameId, int userId)
+        {
+            await HandleRequest(async () =>
+            {
+                var (Success, Message, Game, RecipientId) = await _gameService.OfferDrawAsync(gameId, userId);
+                if (Success)
+                {
+                    await Clients.Group(gameId.ToString()).SendAsync("DrawOffered", _mappingService.MapGameToDto(Game!), RecipientId);
+                }
+                else
+                {
+                    throw new HubException(Message);
+                }
+            });
+        }
+
+        public async Task RespondToDraw(int gameId, int userId, bool accept)
+        {
+            await HandleRequest(async () =>
+            {
+                var (Success, Message, Game, DrawAccepted) = await _gameService.RespondToDrawAsync(gameId, userId, accept);
+                if (Success)
+                {
+                    if (DrawAccepted)
+                        await Clients.Group(gameId.ToString()).SendAsync("GameEnded", _mappingService.MapGameToDto(Game!));
+                    else
+                        await Clients.Group(gameId.ToString()).SendAsync("DrawDeclined", _mappingService.MapGameToDto(Game!));
+                }
+                else
+                {
+                    throw new HubException(Message);
+                }
+            });
+        }
+
         private async Task HandleRequest(Func<Task> requestFunc)
         {
             try

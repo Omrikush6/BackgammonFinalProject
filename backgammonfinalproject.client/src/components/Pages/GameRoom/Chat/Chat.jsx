@@ -12,6 +12,7 @@ function Chat({ messages, onSendMessage, user }) {
 
   return (
     <div className="chat-box">
+      <h3>Game Chat</h3>
       <div className="messages">
         {messages.map((msg, index) => (
           <div key={index} className="message">

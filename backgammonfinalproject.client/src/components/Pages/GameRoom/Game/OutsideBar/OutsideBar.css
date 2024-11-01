@@ -1,22 +1,45 @@
 .outside-bar {
-    width: 60px;
-    height: 100%;
-    background-color: #2e1808;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  
-  .outside-bar.white {
-    justify-content: flex-start;
-  }
+  position: relative;  /* For absolute positioning of children */
+  width: 60px;
+  height: 100%;
+  background-color: #2e1808;
+  display: flex;
+  overflow: hidden; /* Prevent checkers from spilling out */
 
-  
-  .outside-bar[player="white"] {
-    justify-content: flex-start;
-  }
-  
-  .outside-bar[player="black"] {
-    justify-content: flex-end;
-  }
+}
+
+.checkers-container {
+  position: absolute;  /* Key for maintaining bar size */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.outside-bar .checker {
+
+  margin: -12px 0; /* Create overlap effect */
+  flex-shrink: 0; /* Prevent checkers from shrinking */
+}
+
+
+
+/* Checker count badge styling */
+.checker-count {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  font-size: 14px;
+  z-index: 1;
+}
+

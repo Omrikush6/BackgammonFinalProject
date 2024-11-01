@@ -1,6 +1,7 @@
 ﻿using BackgammonFinalProject.Server.DTOs;
 using BackgammonFinalProject.Server.Models;
 using BackgammonFinalProject.Server.Repositories.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using System.Numerics;
 using System.Text.Json;
 
@@ -145,6 +146,80 @@ namespace BackgammonFinalProject.Server.Services
             game.WinnerId = winnerId;
             await _gameRepository.UpdateAsync(game);
             return (true, "Game ended successfully.", game);
+        }
+
+        public async Task<(bool Success, string Message, Game? Game)> ForfeitGameAsync(int gameId, int forfeitingPlayerId)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null);
+            var winnerId = forfeitingPlayerId == game.WhitePlayerId ? game.BlackPlayerId : game.WhitePlayerId;
+            game.GameStatus = GameStatus.Completed;
+            game.WinnerId = winnerId;
+            game.EndTime = DateTime.UtcNow;
+
+            await _gameRepository.UpdateAsync(game);
+            return (true, "Player forfeited. Game ended.", game);
+        }
+        public async Task<(bool Success, string Message, Game? Game, int? Recipient)> OfferDrawAsync(int gameId, int userId)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null,null);
+            if (game.DrawOfferedBy == userId)
+                return (false, "Draw Offerd by player", null,null);
+            if (game.GameStatus != GameStatus.InProgress)
+                return (false, "Draw Offerd by player", null,null);
+            if (userId != game.WhitePlayerId && userId != game.BlackPlayerId)
+                return (false,"Only game participants can offer a draw",null,null);
+            if (game.DrawOfferStatus == DrawOfferStatus.Pending)
+                return (false, "draw already offered", null,null);
+            game.DrawOfferedBy = userId;
+            game.DrawOfferStatus = DrawOfferStatus.Pending;
+            var recipientId = userId == game.WhitePlayerId
+                 ? game.BlackPlayerId
+                 : game.WhitePlayerId;
+            await _gameRepository.UpdateAsync(game);
+            return (true,"draw offered",game, recipientId);
+        }
+
+        public async Task<(bool Success, string Message, Game? Game, bool Accepted)> RespondToDrawAsync(int gameId, int userId, bool accept)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null)
+                return (false, "Game not found.", null, false);
+
+            // Validate draw offer state
+            if (game.DrawOfferStatus != DrawOfferStatus.Pending)
+                return (false, "No pending draw offer.", null, false);
+
+            // Ensure the responding user is the other player
+            if (userId == game.DrawOfferedBy)
+                return (false, "Cannot respond to own draw offer.", null, false);
+
+            // Validate game is still in progress
+            if (game.GameStatus != GameStatus.InProgress)
+                return (false, "Game is not in progress.", null, false);
+
+            if (accept)
+            {
+                // End the game as a draw
+                game.GameStatus = GameStatus.Completed;
+                game.EndTime = DateTime.UtcNow;
+                game.WinnerId = null; // Indicates a draw
+                game.DrawOfferStatus = DrawOfferStatus.Accepted;
+            }
+            else
+            {
+                // Reject the draw offer
+                game.DrawOfferStatus = DrawOfferStatus.Rejected;
+                game.DrawOfferedBy = null;
+            }
+
+            // Update the game state
+            await _gameRepository.UpdateAsync(game);
+
+            return (true, accept ? "Draw accepted" : "Draw rejected", game, accept);
         }
 
     }
