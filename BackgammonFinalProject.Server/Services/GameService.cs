@@ -161,29 +161,34 @@ namespace BackgammonFinalProject.Server.Services
             await _gameRepository.UpdateAsync(game);
             return (true, "Player forfeited. Game ended.", game);
         }
-        public async Task<(bool Success, string Message, Game? Game, int? Recipient)> OfferDrawAsync(int gameId, int userId)
+        public async Task<(bool Success, string Message, int? Recipient)> OfferDrawAsync(int gameId, int userId)
         {
             var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
-                return (false, "Game not found.", null,null);
-            if (game.DrawOfferedBy == userId)
-                return (false, "Draw Offerd by player", null,null);
+                return (false, "Game not found.",null);
+
+            //if (game.DrawOfferedBy == userId)
+            //    return (false, "Draw Offerd by player",null);
+
             if (game.GameStatus != GameStatus.InProgress)
-                return (false, "Draw Offerd by player", null,null);
+                return (false, "Draw Offerd by player",null);
+
             if (userId != game.WhitePlayerId && userId != game.BlackPlayerId)
-                return (false,"Only game participants can offer a draw",null,null);
+                return (false,"Only game participants can offer a draw",null);
+
             if (game.DrawOfferStatus == DrawOfferStatus.Pending)
-                return (false, "draw already offered", null,null);
+                return (false, "draw already offered",null);
+
             game.DrawOfferedBy = userId;
             game.DrawOfferStatus = DrawOfferStatus.Pending;
             var recipientId = userId == game.WhitePlayerId
                  ? game.BlackPlayerId
                  : game.WhitePlayerId;
             await _gameRepository.UpdateAsync(game);
-            return (true,"draw offered",game, recipientId);
+            return (true,"draw offered", recipientId);
         }
 
-        public async Task<(bool Success, string Message, Game? Game, bool Accepted)> RespondToDrawAsync(int gameId, int userId, bool accept)
+        public async Task<(bool Success, string Message, int? UserId, bool Accepted)> RespondToDrawAsync(int gameId, int userId, bool accept)
         {
             var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
@@ -219,7 +224,7 @@ namespace BackgammonFinalProject.Server.Services
             // Update the game state
             await _gameRepository.UpdateAsync(game);
 
-            return (true, accept ? "Draw accepted" : "Draw rejected", game, accept);
+            return (true, accept ? "Draw accepted" : "Draw rejected", userId, accept);
         }
 
     }

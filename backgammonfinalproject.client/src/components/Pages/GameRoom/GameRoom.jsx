@@ -6,6 +6,7 @@ import { UserContext } from '../../../App';
 import Game from './Game/Game';
 import Chat from './Chat/Chat';
 import GameControls from './Game/GameControls/GameControls';
+import DrawOffer from './Game/DrawOffer/DrawOffer';
 import './GameRoom.css';
 
 function GameRoom() {
@@ -18,9 +19,8 @@ function GameRoom() {
   const [winner, setWinner] = useState(null);
   const [turnNotification, setTurnNotification] = useState(null);
   const [error, setError] = useState(null);
-  const [isChatOpen, setIsChatOpen] = useState(true);
   const [drawOffer, setDrawOffer] = useState(false);
-  const [drawResponse, setDrawResponse] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
 
 
@@ -56,7 +56,6 @@ function GameRoom() {
           handleError('initialize game', error);
         }
       }
-      debugger;
     };
     initializeGame();
 
@@ -70,20 +69,25 @@ function GameRoom() {
 useEffect(() => {
   if (game && game.gameStatus == 3) {
     setGameEnded(true);
-    setWinner(game.winnerId == game.whitePlayerId ? 'white' : 'black');
+    const winner = {
+      id: game.winnerId,
+      username: game.players.find(p => p.id == game.winnerId) ?? 'Draw',
+      color: game.winnerId == 0 ? 'draw' : game.winnerId == game.whitePlayerId ? 'white' : 'black'
+    }
+    setWinner(winner);
   }
 }, [game]);
 
   //notafication of turns and winning
-  useEffect(() => {
+useEffect(() => {
     if (game?.currentTurn && game.gameStatus == 2) {
         const isPlayerTurn = game.currentTurn == user.id;
         const playerColor = game.whitePlayerId == user.id ? 'White' : 'Black';
-        const opponentColor = playerColor == 'White' ? 'Black' : 'White';
+        const opponentName = game.players.find(p => p.id != user.id).username;
         
         const message = isPlayerTurn
             ? `It's your turn! You're playing as ${playerColor}.`
-            : `It's ${opponentColor}'s turn now.`;
+            : `It's ${opponentName}'s turn now.`;
         
         setTurnNotification(message);
         const timer = setTimeout(() => setTurnNotification(null), 2000);
@@ -100,41 +104,57 @@ useEffect(() => {
 
   const handleGameUpdated = (updatedGame) => {
       setGame(updatedGame);
+      console.log(updatedGame);
       setMessages(updatedGame.messages || []);
+      setDrawOffer(updatedGame.drawOfferStatus == 1 && updatedGame.drawOfferedBy != user.id ? true : false);
   };
 
   const handleMessageReceived = (message) => {
       setMessages(prev => [...prev, message]);
   };
 
-  const handleDrawOffered = () => {
+  const handleDrawOffered = (recipientId) => {
+    if(recipientId != user.id) return;
     setDrawOffer(true);
+    setTurnNotification('Your opponent has offered a draw.');
+    setTimeout(() => setTurnNotification(null), 3000);
+
   };
   
-  const handleDrawDeclined = () => {
-    setDrawResponse('The opponent declined your draw offer.');
-    setTimeout(() => setDrawResponse(null), 3000);
-  };
+  const handleDrawDeclined = (userId) => {
+    setDrawOffer(false);
+    setTurnNotification(userId != user.id 
+      ? 'Your opponent declined your draw offer.'
+      : 'You declined the opponent\'s draw offer.');
+    setTimeout(() => setTurnNotification(null), 3000);
+    };
   
-  const handleDrawAccepted = () => {
-    setDrawResponse('The opponent accepted your draw offer. Game is a draw.');
-    setTimeout(() => setDrawResponse(null), 3000);
-    setGameEnded(true);
+  const handleDrawAccepted = (userId) => {
+    setDrawOffer(false);
+    setTurnNotification(userId != user.id 
+      ? 'The opponent accepted your draw offer. Game is a draw.'
+      : 'You accepted the opponent\'s draw offer. Game is a draw.');
+    setTimeout(() => setTurnNotification(null), 3000);
   };
 
   const handleGameEnded = (endedGame) => {
     if (!endedGame) return;
-
-    const winnerColor = endedGame.winnerId === endedGame.whitePlayerId ? 'white' : 'black';
-    setGameEnded(true);
-    setWinner(winnerColor);
     setGame(endedGame);
+    const winner = {
+      id: endedGame.winnerId,
+      username: endedGame.players.find(p => p.id == endedGame.winnerId).username ?? 'Draw',
+      color: endedGame.winnerId == 0 ? 'draw' : endedGame.winnerId == endedGame.whitePlayerId ? 'white' : 'black'
+    }
+    setGameEnded(true);
+    setWinner(winner);
 
-    const message = `Game ended. ${winnerColor.charAt(0).toUpperCase() + winnerColor.slice(1)} player won!`;
+    const message = winnerColor == 'draw'
+      ? 'Game ended in a draw.'
+      : `Game ended. ${winnerColor.charAt(0).toUpperCase() + winnerColor.slice(1)} player won!`;
     setTurnNotification(message);
     const timer = setTimeout(() => setTurnNotification(null), 2000);
     return () => clearTimeout(timer);
-};
+  };
 
 // Register event handlers
 GameHubService.onGameStarted(handleGameStarted);
@@ -193,19 +213,20 @@ const handleForfeit = async () => {
 };
 
 const handleOfferDraw = async () => {
-    try {
-        await GameHubService.offerDraw(gameId, user.id);
-    } catch (err) {
-        handleError(err);
-    }
+  try {
+    await GameHubService.offerDraw(gameId, user.id);
+  } catch (err) {
+    handleError(err);
+  }
 };
 
 const handleRespondDraw = async (accepted) => {
-    try {
-        await GameHubService.respondDraw(gameId, user.id, accepted);
-    } catch (err) {
-        handleError(err);
-    }
+  try {
+    setDrawOffer(false);
+    await GameHubService.respondToDraw(gameId, user.id, accepted);
+  } catch (err) {
+    handleError(err);
+  }
 };
 
 
@@ -243,22 +264,19 @@ const handleError = (error) => {
       {gameEnded && (
           <div className="game-end-overlay">
             <h2>
-              {winner === 'You' ? 'Congratulations! You won!' : `Game Over. ${winner} won.`}
+              
+              {winner?.username == 'Draw' ? 'It\'s a draw!' :
+                winner.id == user.id ? 'Congratulations! You won!' :
+                `Game Over. ${winner.color} won.`}
             </h2>
             <button onClick={() => navigate('/lobby')}>Return to Lobby</button>
           </div>
       )}
       {drawOffer && (
-        <div className="draw-offer">
-          <p>Your opponent has offered a draw. Do you accept?</p>
-          <button onClick={() => handleRespondDraw(true)}>Accept</button>
-          <button onClick={() => handleRespondDraw(false)}>Decline</button>
-        </div>
-      )}
-      {drawResponse && (
-        <div className="draw-response">
-          {drawResponse}
-        </div>
+      <DrawOffer 
+      onAccept={() => handleRespondDraw(true)} 
+      onDecline={() => handleRespondDraw(false)} 
+      />
       )}
       <div className="game-room">   
       <Game 

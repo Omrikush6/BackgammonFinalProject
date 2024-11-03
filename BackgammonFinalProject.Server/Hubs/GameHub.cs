@@ -147,10 +147,10 @@ namespace BackgammonFinalProject.Server.Hubs
         {
             await HandleRequest(async () =>
             {
-                var (Success, Message, Game, RecipientId) = await _gameService.OfferDrawAsync(gameId, userId);
+                var (Success, Message, RecipientId) = await _gameService.OfferDrawAsync(gameId, userId);
                 if (Success)
                 {
-                    await Clients.Group(gameId.ToString()).SendAsync("DrawOffered", _mappingService.MapGameToDto(Game!), RecipientId);
+                    await Clients.Group(gameId.ToString()).SendAsync("DrawOffered", RecipientId);
                 }
                 else
                 {
@@ -163,13 +163,24 @@ namespace BackgammonFinalProject.Server.Hubs
         {
             await HandleRequest(async () =>
             {
-                var (Success, Message, Game, DrawAccepted) = await _gameService.RespondToDrawAsync(gameId, userId, accept);
+                var (Success, Message, UserId, DrawAccepted) = await _gameService.RespondToDrawAsync(gameId, userId, accept);
                 if (Success)
                 {
                     if (DrawAccepted)
-                        await Clients.Group(gameId.ToString()).SendAsync("GameEnded", _mappingService.MapGameToDto(Game!));
+                    {
+                        var (success, message, Game) = await _gameService.EndGameAsync(gameId, 0);
+                        if (success)
+                        {
+                            await Clients.Group(gameId.ToString()).SendAsync("GameEnded", _mappingService.MapGameToDto(Game!));
+                            await Clients.Group(gameId.ToString()).SendAsync("DrawAccepted",userId);
+                        }
+                        else
+                        {
+                            throw new HubException(Message);
+                        }
+                    }
                     else
-                        await Clients.Group(gameId.ToString()).SendAsync("DrawDeclined", _mappingService.MapGameToDto(Game!));
+                        await Clients.Group(gameId.ToString()).SendAsync("DrawDeclined", UserId);
                 }
                 else
                 {

@@ -80,6 +80,11 @@
   color: white;
   font-size: 2em;
   text-align: center;
+  margin: 0;
+}
+
+.game-end-overlay button {
+  margin-top: 20px;
 }
 
 .turn-notification {

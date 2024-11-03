@@ -112,8 +112,10 @@ class SignalRService {
             'MessageReceived',
             'PlayerJoined',
             'GameStarted',
+            'RespondToDraw',
             'DrawOffered',
             'DrawDeclined',
+            'DrawAccepted',
             'GameEnded',
             'Error'
         ];
